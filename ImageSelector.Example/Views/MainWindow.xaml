@@ -1,0 +1,44 @@
+﻿<Window 
+    x:Class="ImageSelector.Example.Views.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="clr-namespace:ImageSelector.Example"
+    mc:Ignorable="d"
+    ResizeMode="CanResizeWithGrip"
+    Height="450" Width="800" MinHeight="200" MinWidth="300"
+    Title="Image Selector Example">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="5*"/>
+            <ColumnDefinition Width="2*"/>
+        </Grid.ColumnDefinitions>
+
+        <GroupBox Grid.Column="0" Header="Image Selector">
+            
+        </GroupBox>
+
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            
+            <GroupBox Grid.Row="0" Header="Control">
+                <StackPanel>
+                    <TextBlock Grid.Column="0" Margin="1"
+                               Text="{Binding FileName}"/>
+
+                    <Button Grid.Column="1" Margin="1" Content="Open Image File"
+                            Command="{Binding OpenFile}"/>
+                </StackPanel>
+            </GroupBox>
+
+            <GroupBox Grid.Row="1" Header="Data">
+
+            </GroupBox>
+        </Grid>
+    </Grid>
+</Window>
