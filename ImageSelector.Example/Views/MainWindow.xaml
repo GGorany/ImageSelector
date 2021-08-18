@@ -18,10 +18,8 @@
         </Grid.ColumnDefinitions>
 
         <GroupBox Grid.Column="0" Header="Image Selector">
-            
-            <selector:Rectangler Source="{Binding SourceImage}"
-                                 Rect="{Binding Rect, Mode=TwoWay}"/>
-           
+            <selector:Selector Source="{Binding SourceImage}"
+                               Rect="{Binding Rect, Mode=TwoWay}"/>
         </GroupBox>
 
         <Grid Grid.Column="1">
