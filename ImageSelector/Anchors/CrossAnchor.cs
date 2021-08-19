@@ -13,7 +13,6 @@ namespace ImageSelector.Anchors
             Point bottom = new Point(center.X, center.Y + 5);
             Point left = new Point(center.X - 5, center.Y);
             Point right = new Point(center.X + 5, center.Y);
-            //Pen pen = new Pen(Brushes.Red, 2.0 / base.Magnification);
             Pen pen = new Pen(Brushes.Red, 1.0);
 
             //10x10 cross

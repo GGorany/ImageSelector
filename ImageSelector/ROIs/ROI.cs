@@ -9,8 +9,11 @@ namespace ImageSelector.ROIs
 {
     public abstract class ROI : ItemsControl
     {
-        public static readonly DependencyProperty CurrentStateProperty = DependencyProperty.Register("CurrentState",
-            typeof(State), typeof(ROI), new FrameworkPropertyMetadata(State.Normal, FrameworkPropertyMetadataOptions.AffectsRender));
+        public static readonly DependencyProperty CurrentStateProperty = DependencyProperty.Register(
+            "CurrentState",
+            typeof(State),
+            typeof(ROI),
+            new FrameworkPropertyMetadata(State.Normal, FrameworkPropertyMetadataOptions.AffectsRender));
 
         public State CurrentState
         {

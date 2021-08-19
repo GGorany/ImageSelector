@@ -128,7 +128,9 @@ namespace ImageSelector
         #region Events
         private static void OnSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (!(d is Selector selector)) return;
+            if (!(d is Selector selector)) 
+                return;
+
             if (e.NewValue is ImageSource newImage)
             {
                 selector._SourceImage.Source = newImage;
@@ -148,6 +150,17 @@ namespace ImageSelector
             if (!(d is Selector selector))
                 return;
 
+            if (selector.ROIList.Count != 1)
+                return;
+
+            if (e.NewValue is Point point)
+            {
+                (selector.ROIList[0] as ROIRect).TopLeftPoint = point;
+            }
+            else
+            {
+                (selector.ROIList[0] as ROIRect).TopLeftPoint = new Point(0, 0);
+            }
         }
 
         private static void OnBottomRightChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -155,6 +168,17 @@ namespace ImageSelector
             if (!(d is Selector selector))
                 return;
 
+            if (selector.ROIList.Count != 1)
+                return;
+
+            if (e.NewValue is Point point)
+            {
+                (selector.ROIList[0] as ROIRect).BottomRightPoint = point;
+            }
+            else
+            {
+                (selector.ROIList[0] as ROIRect).BottomRightPoint = new Point(0, 0);
+            }
         }
 
         private void _MouseHandler_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

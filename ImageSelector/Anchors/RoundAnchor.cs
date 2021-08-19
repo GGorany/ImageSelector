@@ -9,9 +9,7 @@ namespace ImageSelector.Anchors
         {
             base.OnRender(drawingContext);
             Point center = new Point(base.Position.X, base.Position.Y);
-            //Pen pen = new Pen(Brushes.Red, 2.0 / base.Magnification);
             Pen pen = new Pen(Brushes.Red, 1.0);
-            //drawingContext.DrawEllipse(Brushes.Transparent, pen, center, 5.0 / base.Magnification, 5.0 / base.Magnification);
             drawingContext.DrawEllipse(Brushes.Transparent, pen, center, 5.0, 5.0);
         }
     }

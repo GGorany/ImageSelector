@@ -10,7 +10,6 @@ namespace ImageSelector.ROIs
 {
     public class ROILine : ROI
     {
-        //https://wpf.2000things.com/tag/affectsrender/
         public static readonly DependencyProperty StartPointProperty = DependencyProperty.Register(
             "StartPoint",
             typeof(Point),
@@ -36,6 +35,7 @@ namespace ImageSelector.ROIs
         }
 
         const int START = 0, END = 1;
+
         public ROILine()
         {
             base.Anchors.Add(AnchorsFactory.Create(AnchorType.Resize, this));
