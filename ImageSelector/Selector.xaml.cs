@@ -19,10 +19,24 @@ namespace ImageSelector
     public partial class Selector : UserControl
     {
         private Point mousePosition = new Point(0, 0);
+        private bool isSquareMode = false;
         private ROIDescriptor _lastROIDescriptor = new ROIDescriptor();
-        private WriteableBitmap writeableBitmap = null;
 
         public event EventHandler<ROIValueChangedEventArgs> ROIValueChanged;
+
+        #region Properties
+        private double _Magnification = 1.0;
+
+        public double Magnification
+        {
+            get { return _Magnification; }
+            set
+            {
+                _Magnification = value;
+                ApplyMagnification();
+            }
+        }
+        #endregion
 
         #region DependencyProperties
         public static readonly DependencyProperty SourceProperty = DependencyProperty.Register(
@@ -31,17 +45,17 @@ namespace ImageSelector
             typeof(Selector),
             new PropertyMetadata(default(ImageSource), OnSourceChanged));
 
-        public static readonly DependencyProperty RectProperty = DependencyProperty.Register(
-            "Rect",
-            typeof(Rectangle),
+        public static readonly DependencyProperty TopLeftProperty = DependencyProperty.Register(
+            "TopLeft",
+            typeof(Point),
             typeof(Selector),
-            new PropertyMetadata(default(Rectangle), OnRectChanged));
+            new PropertyMetadata(default(Point), OnTopLeftChanged));
 
-        public static readonly DependencyProperty MagnificationProperty = DependencyProperty.Register(
-            "Magnification", 
-            typeof(double), 
+        public static readonly DependencyProperty BottomRightProperty = DependencyProperty.Register(
+            "BottomRight",
+            typeof(Point),
             typeof(Selector),
-            new FrameworkPropertyMetadata(1.0, FrameworkPropertyMetadataOptions.AffectsRender, OnMagnificationChanged));
+            new PropertyMetadata(default(Point), OnBottomRightChanged));
 
         public ImageSource Source
         {
@@ -49,16 +63,16 @@ namespace ImageSelector
             set { SetValue(SourceProperty, value); }
         }
 
-        public Rectangle Rect
+        public Point TopLeft
         {
-            get { return (Rectangle)GetValue(RectProperty); }
-            set { SetValue(RectProperty, value); }
+            get { return (Point)GetValue(TopLeftProperty); }
+            set { SetValue(TopLeftProperty, value); }
         }
 
-        public double Magnification
+        public Point BottomRight
         {
-            get { return (double)GetValue(MagnificationProperty); }
-            set { SetValue(MagnificationProperty, value); }
+            get { return (Point)GetValue(BottomRightProperty); }
+            set { SetValue(BottomRightProperty, value); }
         }
         #endregion
 
@@ -104,7 +118,11 @@ namespace ImageSelector
             _MouseHandler.MouseLeftButtonUp += _MouseHandler_MouseLeftButtonUp;
             _MouseHandler.MouseWheel += _MouseHandler_MouseWheel;
 
+            _SquareMode.Checked += (s, e) => { isSquareMode = (bool)(s as CheckBox).IsChecked; };
+            _SquareMode.Unchecked += (s, e) => { isSquareMode = (bool)(s as CheckBox).IsChecked; };
+
             ROIList = new ObservableCollection<ROI>();
+            _ROI.ItemsSource = ROIList;
         }
 
         #region Events
@@ -113,38 +131,30 @@ namespace ImageSelector
             if (!(d is Selector selector)) return;
             if (e.NewValue is ImageSource newImage)
             {
-                selector.writeableBitmap = BitmapFactory.ConvertToPbgra32Format((BitmapSource)newImage);
+                selector._SourceImage.Source = newImage;
                 selector._SourceImage.Width = newImage.Width;
                 selector._SourceImage.Height = newImage.Height;
-                selector._SourceImage.Source = selector.writeableBitmap;
             }
             else
             {
-                selector.writeableBitmap = null;
+                selector._SourceImage.Source = null;
                 selector._SourceImage.Width = double.NaN;
                 selector._SourceImage.Height = double.NaN;
-                selector._SourceImage.Source = null;
             }
         }
 
-        private static void OnRectChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnTopLeftChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (!(d is Selector selector)) return;
-            //if (selector.CroppingAdorner == default) return;
-            //if (e.NewValue is Rectangle rect)
-            //{
-            //    selector.AdornerCrop(rect);
-            //}
-            //else
-            //{
-            //    selector.CroppingAdorner.Crop = Rectangle.Empty;
-            //}
+            if (!(d is Selector selector))
+                return;
+
         }
 
-        private static void OnMagnificationChanged(DependencyObject d, DependencyPropertyChangedEventArgs magnification)
+        private static void OnBottomRightChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (!(d is Selector selector)) return;
-            selector.ApplyMagnification((double)magnification.NewValue);
+            if (!(d is Selector selector))
+                return;
+
         }
 
         private void _MouseHandler_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -158,6 +168,8 @@ namespace ImageSelector
 
         private void _MouseHandler_MouseMove(object sender, MouseEventArgs e)
         {
+            mousePosition = Mouse.GetPosition(_SourceImage);
+
             ShowMousePosition();
         }
 
@@ -168,10 +180,20 @@ namespace ImageSelector
 
         private void _MouseHandler_MouseWheel(object sender, MouseWheelEventArgs e)
         {
+            mousePosition = Mouse.GetPosition(_SourceImage);
+
             double zoom_delta = e.Delta > 0 ? .1 : -.1;
             Magnification = (Magnification += zoom_delta).LimitToRange(.1, 10);
-            ApplyMagnification(Magnification);
+            ApplyMagnification();
             ShowMousePosition();
+
+            // Center Viewer Around Mouse Position
+            if (_ScrollViewer != null)
+            {
+                _ScrollViewer.ScrollToHorizontalOffset(mousePosition.X * Magnification - Mouse.GetPosition(_ScrollViewer).X);
+                _ScrollViewer.ScrollToVerticalOffset(mousePosition.Y * Magnification - Mouse.GetPosition(_ScrollViewer).Y);
+            }
+
             e.Handled = true;
         }
 
@@ -206,27 +228,27 @@ namespace ImageSelector
         #region Private Method
         private void ShowMousePosition()
         {
-            var point = Mouse.GetPosition(_SourceImage);
+            Point point = Mouse.GetPosition(_SourceImage);
             if ((point.X >= 0) && (point.X < _SourceImage.Width) && (point.Y >= 0) && (point.Y < _SourceImage.Height))
             {
                 _Position.Text = $"x = {Mouse.GetPosition(_SourceImage).X:N0}; y = {Mouse.GetPosition(_SourceImage).Y:N0}";
             }
         }
 
-        private void ApplyMagnification(double magnification)
+        private void ApplyMagnification()
         {
             if (_SourceImage != null)
             {
                 ScaleTransform obj = (ScaleTransform)_SourceImage.LayoutTransform;
-                obj.ScaleX = obj.ScaleY = magnification;
+                obj.ScaleX = obj.ScaleY = Magnification;
                 RenderOptions.SetBitmapScalingMode(_SourceImage, BitmapScalingMode.HighQuality);
-                _Zoom.Text = $"{magnification * 100:N0}%";
+                _Zoom.Text = $"{Magnification * 100:N0}%";
             }
 
             if (_ROI != null)
             {
                 ScaleTransform obj2 = (ScaleTransform)_ROI.LayoutTransform;
-                obj2.ScaleX = obj2.ScaleY = magnification;
+                obj2.ScaleX = obj2.ScaleY = Magnification;
             }
         }
 
@@ -238,7 +260,6 @@ namespace ImageSelector
             rectROI.CaptureMouse();
             rectROI.CurrentState = State.DrawingInProgress;
             rectROI.LastROIDrawEvent += OnGetLastDrawEventUpdated;
-            SetBinding(MagnificationProperty.Name, rectROI, ROI.MagnificationProperty);
         }
 
         private ROIDescriptor GetROIDescriptor()
@@ -252,27 +273,6 @@ namespace ImageSelector
                 roiDescriptor.contours.Add(item.GetROIDescriptorContour());
 
             return roiDescriptor;
-        }
-
-        private void SetBinding(string sourcePathName, DependencyObject targetObject, DependencyProperty targetDp)
-        {
-            Binding binding = new Binding(sourcePathName);
-            binding.Source = this;
-            BindingOperations.SetBinding(targetObject, targetDp, binding);
-        }
-
-        private void ReCreateBitmap(ImageSource image)
-        {
-            PixelFormat pixelFormat = PixelFormats.Gray8;
-            BitmapPalette palette = null;
-
-            if ((null == writeableBitmap) ||
-                (image.Width != writeableBitmap.Width) || 
-                (image.Height != writeableBitmap.Height))
-            {
-                writeableBitmap = new WriteableBitmap((int)image.Width, (int)image.Height, 96, 96, pixelFormat, palette);
-            }
-
         }
         #endregion
     }

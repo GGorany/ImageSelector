@@ -11,12 +11,17 @@ namespace ImageSelector.ROIs
     public class ROILine : ROI
     {
         //https://wpf.2000things.com/tag/affectsrender/
-        public static readonly DependencyProperty StartPointProperty = DependencyProperty.Register("StartPoint",
-            typeof(Point), typeof(ROILine), new FrameworkPropertyMetadata(new Point(0.0, 0.0),
-            FrameworkPropertyMetadataOptions.AffectsRender, OnStartPointChanged)); //.AD. OnChange added 21FEB2020
-        public static readonly DependencyProperty EndPointProperty = DependencyProperty.Register("EndPoint",
-            typeof(Point), typeof(ROILine), new FrameworkPropertyMetadata(new Point(0.0, 0.0),
-            FrameworkPropertyMetadataOptions.AffectsRender, OnEndPointChanged));
+        public static readonly DependencyProperty StartPointProperty = DependencyProperty.Register(
+            "StartPoint",
+            typeof(Point),
+            typeof(ROILine),
+            new FrameworkPropertyMetadata(new Point(0.0, 0.0), FrameworkPropertyMetadataOptions.AffectsRender, OnStartPointChanged)); //.AD. OnChange added 21FEB2020
+        
+        public static readonly DependencyProperty EndPointProperty = DependencyProperty.Register(
+            "EndPoint",
+            typeof(Point),
+            typeof(ROILine),
+            new FrameworkPropertyMetadata(new Point(0.0, 0.0), FrameworkPropertyMetadataOptions.AffectsRender, OnEndPointChanged));
 
         public Point StartPoint
         {
@@ -66,8 +71,10 @@ namespace ImageSelector.ROIs
                     break;
                 case State.Selected:
                     //ToDo: avoid collapse here!
-                    if (actElt == base.Anchors[START]) StartPoint = new Point(StartPoint.X - diff.X, StartPoint.Y - diff.Y);
-                    else if (actElt == base.Anchors[END]) EndPoint = new Point(EndPoint.X - diff.X, EndPoint.Y - diff.Y);
+                    if (actElt == base.Anchors[START]) 
+                        StartPoint = new Point(StartPoint.X - diff.X, StartPoint.Y - diff.Y);
+                    else if (actElt == base.Anchors[END]) 
+                        EndPoint = new Point(EndPoint.X - diff.X, EndPoint.Y - diff.Y);
                     else if (actElt == this)
                     {
                         StartPoint = new Point(StartPoint.X - diff.X, StartPoint.Y - diff.Y);
@@ -83,10 +90,12 @@ namespace ImageSelector.ROIs
             ReleaseMouseCapture();
             base.CurrentState = State.Normal;
         }
+
         protected override void OnRender(DrawingContext dc)
         {
             base.OnRender(dc);
-            Pen pen = new Pen(Brushes.Red, 2.0 / base.Magnification); //ToDo: scale with magnification factor!
+            //Pen pen = new Pen(Brushes.Red, 2.0 / base.Magnification); //ToDo: scale with magnification factor!
+            Pen pen = new Pen(Brushes.Red, 1.0);
             dc.DrawLine(pen, StartPoint, EndPoint);
         }
 

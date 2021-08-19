@@ -10,13 +10,18 @@ namespace ImageSelector.ROIs
 {
     public class ROIRect : ROI
     {
+        #region DependencyProperties
+        public static readonly DependencyProperty TopLeftProperty = DependencyProperty.Register(
+            "TopLeft",
+            typeof(Point),
+            typeof(ROIRect),
+            new FrameworkPropertyMetadata(new Point(0.0, 0.0), FrameworkPropertyMetadataOptions.AffectsRender, OnTopLeftChanged));
 
-        public static readonly DependencyProperty TopLeftProperty = DependencyProperty.Register("TopLeft", 
-            typeof(Point), typeof(ROIRect), new FrameworkPropertyMetadata(new Point(0.0, 0.0),
-            FrameworkPropertyMetadataOptions.AffectsRender, OnTopLeftChanged));
-        public static readonly DependencyProperty BottomRightProperty = DependencyProperty.Register("BottomRight", 
-            typeof(Point), typeof(ROIRect), new FrameworkPropertyMetadata(new Point(0.0, 0.0),
-            FrameworkPropertyMetadataOptions.AffectsRender, OnBottomRightChanged));
+        public static readonly DependencyProperty BottomRightProperty = DependencyProperty.Register(
+            "BottomRight",
+            typeof(Point),
+            typeof(ROIRect),
+            new FrameworkPropertyMetadata(new Point(0.0, 0.0), FrameworkPropertyMetadataOptions.AffectsRender, OnBottomRightChanged));
 
         public Point TopLeftPoint
         {
@@ -29,6 +34,7 @@ namespace ImageSelector.ROIs
             get { return (Point)GetValue(BottomRightProperty); }
             set { SetValue(BottomRightProperty, value); }
         }
+        #endregion
 
         //Anchors
         const int TOP_LEFT = 0, TOP_RIGHT = 1, BOTTOM_LEFT = 2, BOTTOM_RIGHT = 3, CENTER = 4;
@@ -36,12 +42,15 @@ namespace ImageSelector.ROIs
         public ROIRect()
         {
             //four anchor points and one center point
-            for (int i = 0; i < 4; i++) base.Anchors.Add(AnchorsFactory.Create(AnchorType.Resize, this));
+            for (int i = 0; i < 4; i++) 
+                base.Anchors.Add(AnchorsFactory.Create(AnchorType.Resize, this));
+
             base.Anchors.Add(AnchorsFactory.Create(AnchorType.Move, this));
             base.MouseLeftButtonDown += OnRectROIMouseLeftButtonDown;
             base.MouseLeftButtonUp += OnRectROIMouseLeftButtonUp;
             base.MouseMove += OnRectROIMouseMove;
         }
+
         private void OnRectROIMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (base.CurrentState == State.Normal)
@@ -135,11 +144,11 @@ namespace ImageSelector.ROIs
             obj.Anchors[CENTER].Position = center;
         }
 
-
         protected override void OnRender(DrawingContext dc)
         {
             base.OnRender(dc);
-            Pen pen = new Pen(Brushes.Red, 2.0 / base.Magnification);
+            //Pen pen = new Pen(Brushes.Red, 2.0 / base.Magnification);
+            Pen pen = new Pen(Brushes.Red, 1.0);
             Rect rect;
 
             rect.X = Math.Min(TopLeftPoint.X, BottomRightPoint.X);
@@ -183,6 +192,5 @@ namespace ImageSelector.ROIs
                 }
             };
         }
-
-    } //RectROI
+    }
 }

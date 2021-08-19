@@ -19,7 +19,8 @@
 
         <GroupBox Grid.Column="0" Header="Image Selector">
             <selector:Selector Source="{Binding SourceImage}"
-                               Rect="{Binding Rect, Mode=TwoWay}"/>
+                               TopLeft="{Binding PointTopLeft, Mode=TwoWay}"
+                               BottomRight="{Binding PointBottomRight, Mode=TwoWay}"/>
         </GroupBox>
 
         <Grid Grid.Column="1">
@@ -39,7 +40,10 @@
             </GroupBox>
 
             <GroupBox Grid.Row="1" Header="Data">
-
+                <StackPanel Orientation="Vertical">
+                    <TextBlock Text="{Binding TextTopLeft}"/>
+                    <TextBlock Text="{Binding TextBottomRight}"/>
+                </StackPanel>
             </GroupBox>
         </Grid>
     </Grid>

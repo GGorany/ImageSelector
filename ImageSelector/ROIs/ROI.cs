@@ -17,14 +17,6 @@ namespace ImageSelector.ROIs
             get { return (State)GetValue(CurrentStateProperty); }
             set { SetValue(CurrentStateProperty, value); }
         }
-        public static readonly DependencyProperty MagnificationProperty = DependencyProperty.Register("Magnification",
-            typeof(double), typeof(ROI), new FrameworkPropertyMetadata(1.0, FrameworkPropertyMetadataOptions.AffectsRender));
-
-        public double Magnification
-        {
-            get { return (double)GetValue(MagnificationProperty); }
-            set { SetValue(MagnificationProperty, value); }
-        }
 
         public Point actPos = new Point(0.0, 0.0);
         public Point prevPos = new Point(0.0, 0.0);
@@ -41,8 +33,11 @@ namespace ImageSelector.ROIs
         public abstract ROIDescriptor.Contour GetROIDescriptorContour();
 
         /* ANCHORS using System.Collections.ObjectModel; */
-        private static readonly DependencyPropertyKey AnchorsPropertyKey = DependencyProperty.RegisterReadOnly("Anchors",
-            typeof(ObservableCollection<Anchor>), typeof(ROI), new PropertyMetadata(null));
+        private static readonly DependencyPropertyKey AnchorsPropertyKey = DependencyProperty.RegisterReadOnly(
+            "Anchors",
+            typeof(ObservableCollection<Anchor>),
+            typeof(ROI),
+            new PropertyMetadata(null));
 
         public static readonly DependencyProperty AnchorsProperty = AnchorsPropertyKey.DependencyProperty;
 
