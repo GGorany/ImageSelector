@@ -160,7 +160,10 @@ namespace ImageSelector
                 return;
 
             if (e.NewValue is Point point)
-                (rectangler.ROIList[0] as ROIRect).BottomRightPoint = point;
+            {
+                if (Helper.IsInImageArea(ref rectangler._SourceImage, point))
+                    (rectangler.ROIList[0] as ROIRect).BottomRightPoint = point;
+            }
             else
                 (rectangler.ROIList[0] as ROIRect).BottomRightPoint = new Point(0, 0);
         }
@@ -170,7 +173,9 @@ namespace ImageSelector
             if (e.OriginalSource == _MouseHandler)
             {
                 ROIList.Clear();
-                StartDrawingRectROI();
+
+                if (Helper.IsInImageArea(ref _SourceImage, Mouse.GetPosition(_SourceImage)))
+                    StartDrawingRectROI();
             }
         }
 
@@ -242,9 +247,10 @@ namespace ImageSelector
         private void ShowMousePosition()
         {
             Point point = Mouse.GetPosition(_SourceImage);
-            if ((point.X >= 0) && (point.X < _SourceImage.Width) && (point.Y >= 0) && (point.Y < _SourceImage.Height))
+
+            if (Helper.IsInImageArea(ref _SourceImage, point))
             {
-                _Position.Text = $"MOUSE : x = {Mouse.GetPosition(_SourceImage).X:N0}, y = {Mouse.GetPosition(_SourceImage).Y:N0}";
+                _Position.Text = $"MOUSE : x = {point.X:N0}, y = {point.Y:N0}";
             }
         }
 
