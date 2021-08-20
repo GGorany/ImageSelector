@@ -2,24 +2,19 @@
 
 using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace ImageSelector
 {
     /// <summary>
     /// Selector.xaml에 대한 상호 작용 논리
     /// </summary>
-    public partial class Selector : UserControl
+    public partial class Liner : UserControl
     {
         private Point mousePosition = new Point(0, 0);
-        private bool isSquareMode = false;
         private ROIDescriptor _lastROIDescriptor = new ROIDescriptor();
 
         public event EventHandler<ROIValueChangedEventArgs> ROIValueChanged;
@@ -42,20 +37,20 @@ namespace ImageSelector
         public static readonly DependencyProperty SourceProperty = DependencyProperty.Register(
             "Source",
             typeof(ImageSource),
-            typeof(Selector),
+            typeof(Liner),
             new PropertyMetadata(default(ImageSource), OnSourceChanged));
 
-        public static readonly DependencyProperty TopLeftProperty = DependencyProperty.Register(
-            "TopLeft",
+        public static readonly DependencyProperty StartPointProperty = DependencyProperty.Register(
+            "StartPoint",
             typeof(Point),
-            typeof(Selector),
-            new PropertyMetadata(default(Point), OnTopLeftChanged));
+            typeof(Liner),
+            new PropertyMetadata(default(Point), OnStartPointChanged));
 
-        public static readonly DependencyProperty BottomRightProperty = DependencyProperty.Register(
-            "BottomRight",
+        public static readonly DependencyProperty EndPointProperty = DependencyProperty.Register(
+            "EndPoint",
             typeof(Point),
-            typeof(Selector),
-            new PropertyMetadata(default(Point), OnBottomRightChanged));
+            typeof(Liner),
+            new PropertyMetadata(default(Point), OnEndPointChanged));
 
         public ImageSource Source
         {
@@ -63,16 +58,16 @@ namespace ImageSelector
             set { SetValue(SourceProperty, value); }
         }
 
-        public Point TopLeft
+        public Point StartPoint
         {
-            get { return (Point)GetValue(TopLeftProperty); }
-            set { SetValue(TopLeftProperty, value); }
+            get { return (Point)GetValue(StartPointProperty); }
+            set { SetValue(StartPointProperty, value); }
         }
 
-        public Point BottomRight
+        public Point EndPoint
         {
-            get { return (Point)GetValue(BottomRightProperty); }
-            set { SetValue(BottomRightProperty, value); }
+            get { return (Point)GetValue(EndPointProperty); }
+            set { SetValue(EndPointProperty, value); }
         }
         #endregion
 
@@ -80,7 +75,7 @@ namespace ImageSelector
         private static readonly DependencyPropertyKey ROIListPropertyKey = DependencyProperty.RegisterReadOnly(
             "ROIList",
             typeof(ObservableCollection<ROI>),
-            typeof(Selector),
+            typeof(Liner),
             new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender));
 
         public static readonly DependencyProperty ROIListProperty = ROIListPropertyKey.DependencyProperty;
@@ -88,7 +83,7 @@ namespace ImageSelector
         private static readonly DependencyPropertyKey GetLastEventDataPropertyKey = DependencyProperty.RegisterReadOnly(
             "GetLastEventData",
             typeof(ROIDescriptor.LastEventData),
-            typeof(Selector),
+            typeof(Liner),
             new PropertyMetadata(null, OnGetLastEventDataChanged));
 
         public static readonly DependencyProperty GetLastEventDataProperty = GetLastEventDataPropertyKey.DependencyProperty;
@@ -106,7 +101,7 @@ namespace ImageSelector
         }
         #endregion
 
-        public Selector()
+        public Liner()
         {
             InitializeComponent();
 
@@ -118,9 +113,6 @@ namespace ImageSelector
             _MouseHandler.MouseLeftButtonUp += _MouseHandler_MouseLeftButtonUp;
             _MouseHandler.MouseWheel += _MouseHandler_MouseWheel;
 
-            _SquareMode.Checked += (s, e) => { isSquareMode = (bool)(s as CheckBox).IsChecked; };
-            _SquareMode.Unchecked += (s, e) => { isSquareMode = (bool)(s as CheckBox).IsChecked; };
-
             ROIList = new ObservableCollection<ROI>();
             _ROI.ItemsSource = ROIList;
         }
@@ -128,57 +120,49 @@ namespace ImageSelector
         #region Events
         private static void OnSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (!(d is Selector selector)) 
+            if (!(d is Liner liner)) 
                 return;
 
             if (e.NewValue is ImageSource newImage)
             {
-                selector._SourceImage.Source = newImage;
-                selector._SourceImage.Width = newImage.Width;
-                selector._SourceImage.Height = newImage.Height;
+                liner._SourceImage.Source = newImage;
+                liner._SourceImage.Width = newImage.Width;
+                liner._SourceImage.Height = newImage.Height;
             }
             else
             {
-                selector._SourceImage.Source = null;
-                selector._SourceImage.Width = double.NaN;
-                selector._SourceImage.Height = double.NaN;
+                liner._SourceImage.Source = null;
+                liner._SourceImage.Width = double.NaN;
+                liner._SourceImage.Height = double.NaN;
             }
         }
 
-        private static void OnTopLeftChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnStartPointChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (!(d is Selector selector))
+            if (!(d is Liner liner))
                 return;
 
-            if (selector.ROIList.Count != 1)
+            if (liner.ROIList.Count != 1)
                 return;
 
             if (e.NewValue is Point point)
-            {
-                (selector.ROIList[0] as ROIRect).TopLeftPoint = point;
-            }
+                (liner.ROIList[0] as ROILine).StartPoint = point;
             else
-            {
-                (selector.ROIList[0] as ROIRect).TopLeftPoint = new Point(0, 0);
-            }
+                (liner.ROIList[0] as ROILine).StartPoint = new Point(0, 0);
         }
 
-        private static void OnBottomRightChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnEndPointChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (!(d is Selector selector))
+            if (!(d is Liner liner))
                 return;
 
-            if (selector.ROIList.Count != 1)
+            if (liner.ROIList.Count != 1)
                 return;
 
             if (e.NewValue is Point point)
-            {
-                (selector.ROIList[0] as ROIRect).BottomRightPoint = point;
-            }
+                (liner.ROIList[0] as ROILine).EndPoint = point;
             else
-            {
-                (selector.ROIList[0] as ROIRect).BottomRightPoint = new Point(0, 0);
-            }
+                (liner.ROIList[0] as ROILine).EndPoint = new Point(0, 0);
         }
 
         private void _MouseHandler_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -186,7 +170,7 @@ namespace ImageSelector
             if (e.OriginalSource == _MouseHandler)
             {
                 ROIList.Clear();
-                StartDrawingRectROI();
+                StartDrawingLineROI();
             }
         }
 
@@ -195,6 +179,7 @@ namespace ImageSelector
             mousePosition = Mouse.GetPosition(_SourceImage);
 
             ShowMousePosition();
+            ShowLinePoints();
         }
 
         private void _MouseHandler_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -210,6 +195,7 @@ namespace ImageSelector
             Magnification = (Magnification += zoom_delta).LimitToRange(.1, 10);
             ApplyMagnification();
             ShowMousePosition();
+            ShowLinePoints();
 
             // Center Viewer Around Mouse Position
             if (_ScrollViewer != null)
@@ -223,17 +209,17 @@ namespace ImageSelector
 
         private static void OnGetLastEventDataChanged(DependencyObject obj, DependencyPropertyChangedEventArgs args)
         {
-            Selector selector = (Selector)obj;
+            Liner liner = (Liner)obj;
             ROIDescriptor.LastEventData lastEventData = (ROIDescriptor.LastEventData)args.NewValue;
             ROIDescriptor.LastEventData other = (ROIDescriptor.LastEventData)args.OldValue;
             if (lastEventData.type == EventType.Draw)
             {
-                ROIDescriptor lastROIDescriptor = selector._lastROIDescriptor;
-                ROIDescriptor previousROIDescriptor = selector.GetROIDescriptor();
+                ROIDescriptor lastROIDescriptor = liner._lastROIDescriptor;
+                ROIDescriptor previousROIDescriptor = liner.GetROIDescriptor();
                 if (!lastEventData.IsChanged(other) || !previousROIDescriptor.IsChanged(lastROIDescriptor))
                 {
-                    selector._lastROIDescriptor = previousROIDescriptor;
-                    selector.OnROIValueChanged(new ROIValueChangedEventArgs(lastEventData, lastROIDescriptor, previousROIDescriptor));
+                    liner._lastROIDescriptor = previousROIDescriptor;
+                    liner.OnROIValueChanged(new ROIValueChangedEventArgs(lastEventData, lastROIDescriptor, previousROIDescriptor));
                 }
             }
         }
@@ -246,6 +232,9 @@ namespace ImageSelector
         private void OnROIValueChanged(ROIValueChangedEventArgs args)
         {
             this.ROIValueChanged?.Invoke(this, args);
+
+            StartPoint = args.ROI.contours[0].points[0];
+            EndPoint = args.ROI.contours[0].points[1];
         }
         #endregion
 
@@ -255,8 +244,24 @@ namespace ImageSelector
             Point point = Mouse.GetPosition(_SourceImage);
             if ((point.X >= 0) && (point.X < _SourceImage.Width) && (point.Y >= 0) && (point.Y < _SourceImage.Height))
             {
-                _Position.Text = $"x = {Mouse.GetPosition(_SourceImage).X:N0}; y = {Mouse.GetPosition(_SourceImage).Y:N0}";
+                _Position.Text = $"MOUSE : x = {Mouse.GetPosition(_SourceImage).X:N0}, y = {Mouse.GetPosition(_SourceImage).Y:N0}";
             }
+        }
+
+        private void ShowLinePoints()
+        {
+            int sp_x = 0, sp_y = 0, ep_x = 0, ep_y = 0;
+
+            if (ROIList.Count != 0)
+            {
+                sp_x = (int)(ROIList[0] as ROILine).StartPoint.X;
+                sp_y = (int)(ROIList[0] as ROILine).StartPoint.Y;
+                ep_x = (int)(ROIList[0] as ROILine).EndPoint.X;
+                ep_y = (int)(ROIList[0] as ROILine).EndPoint.Y;
+            }
+
+            _StartPoint.Text = $"START POINT : x = {sp_x:N0}, y = {sp_y:N0}";
+            _EndPoint.Text = $"END POINT : x = {ep_x:N0}, y = {ep_y:N0}";
         }
 
         private void ApplyMagnification()
@@ -266,7 +271,7 @@ namespace ImageSelector
                 ScaleTransform obj = (ScaleTransform)_SourceImage.LayoutTransform;
                 obj.ScaleX = obj.ScaleY = Magnification;
                 RenderOptions.SetBitmapScalingMode(_SourceImage, BitmapScalingMode.HighQuality);
-                _Zoom.Text = $"{Magnification * 100:N0}%";
+                _Zoom.Text = $"ZOOM : {Magnification * 100:N0}%";
             }
 
             if (_ROI != null)
@@ -276,14 +281,14 @@ namespace ImageSelector
             }
         }
 
-        private void StartDrawingRectROI()
+        private void StartDrawingLineROI()
         {
-            ROIRect rectROI = new ROIRect();
-            ROIList.Add(rectROI);
-            rectROI.TopLeftPoint = rectROI.BottomRightPoint = mousePosition;
-            rectROI.CaptureMouse();
-            rectROI.CurrentState = State.DrawingInProgress;
-            rectROI.LastROIDrawEvent += OnGetLastDrawEventUpdated;
+            ROILine lineROI = new ROILine();
+            ROIList.Add(lineROI);
+            lineROI.EndPoint = lineROI.StartPoint = mousePosition;
+            lineROI.CaptureMouse();
+            lineROI.CurrentState = State.DrawingInProgress;
+            lineROI.LastROIDrawEvent += OnGetLastDrawEventUpdated;
         }
 
         private ROIDescriptor GetROIDescriptor()

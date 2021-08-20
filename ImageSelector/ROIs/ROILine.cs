@@ -94,7 +94,6 @@ namespace ImageSelector.ROIs
         protected override void OnRender(DrawingContext dc)
         {
             base.OnRender(dc);
-            //Pen pen = new Pen(Brushes.Red, 2.0 / base.Magnification); //ToDo: scale with magnification factor!
             Pen pen = new Pen(Brushes.Red, 1.0);
             dc.DrawLine(pen, StartPoint, EndPoint);
         }

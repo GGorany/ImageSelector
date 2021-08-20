@@ -5,80 +5,20 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:local="clr-namespace:ImageSelector.Example"
-    xmlns:selector="clr-namespace:ImageSelector;assembly=ImageSelector"
-    xmlns:prism="http://prismlibrary.com/"
-    prism:ViewModelLocator.AutoWireViewModel="True"
+    xmlns:views="clr-namespace:ImageSelector.Example.Views"
     mc:Ignorable="d"
     ResizeMode="CanResizeWithGrip"
     Height="450" Width="800" MinHeight="200" MinWidth="300"
     Title="Image Selector Example">
 
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="5*"/>
-            <ColumnDefinition Width="2*"/>
-        </Grid.ColumnDefinitions>
-
-        <GroupBox Grid.Column="0" Header="Image Selector">
-            <selector:Selector Source="{Binding SourceImage}"
-                               TopLeft="{Binding PointTopLeft, Mode=TwoWay}"
-                               BottomRight="{Binding PointBottomRight, Mode=TwoWay}"/>
-        </GroupBox>
-
-        <Grid Grid.Column="1">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-            
-            <GroupBox Grid.Row="0" Header="Control">
-                <StackPanel>
-                    <TextBlock Grid.Column="0" Margin="1"
-                               Text="{Binding FileName}"/>
-
-                    <Button Grid.Column="1" Margin="1" Content="Open Image File"
-                            Command="{Binding OpenFile}"/>
-                </StackPanel>
-            </GroupBox>
-
-            <GroupBox Grid.Row="1" Header="Data">
-                <StackPanel Orientation="Vertical">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="40"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="40"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <TextBlock Grid.Column="0"
-                                   Text=" TL X : "/>
-                        <TextBox Grid.Column="1"
-                                 Text="{Binding TopLeftX}"/>
-                        <TextBlock Grid.Column="2"
-                                   Text=" TL Y : "/>
-                        <TextBox Grid.Column="3"
-                                 Text="{Binding TopLeftY}"/>
-                    </Grid>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="40"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="40"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <TextBlock Grid.Column="0"
-                                   Text=" BR X : "/>
-                        <TextBox Grid.Column="1"
-                                 Text="{Binding BottomRightX}"/>
-                        <TextBlock Grid.Column="2"
-                                   Text=" BR Y : "/>
-                        <TextBox Grid.Column="3"
-                                 Text="{Binding BottomRightY}"/>
-                    </Grid>
-                </StackPanel>
-            </GroupBox>
-        </Grid>
+        <TabControl>
+            <TabItem Header="Rectangler Example">
+                <views:RectanglerTest/>
+            </TabItem>
+            <TabItem Header="Liner Example">
+                <views:LinerTest/>
+            </TabItem>
+        </TabControl>
     </Grid>
 </Window>

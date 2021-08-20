@@ -30,15 +30,6 @@ namespace ImageSelector.Anchors
         }
         #endregion
 
-        //public static readonly DependencyProperty MagnificationProperty = DependencyProperty.Register("Magnification", typeof(double),
-        //    typeof(Anchor), new FrameworkPropertyMetadata(1.0, FrameworkPropertyMetadataOptions.AffectsRender));
-
-        //public double Magnification
-        //{
-        //    get { return (double)GetValue(MagnificationProperty); }
-        //    set { SetValue(MagnificationProperty, value); }
-        //}
-
         public Anchor() { }
     }
 }

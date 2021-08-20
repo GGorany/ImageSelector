@@ -15,4 +15,25 @@
     <ProjectReference Include="..\ImageSelector\ImageSelector.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="Views\RectanglerTest - 복사 - 복사.xaml.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>RectanglerTest - 복사.xaml.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Views\LinerTest.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\RectanglerTest - 복사.xaml.cs">
+      <SubType>Code</SubType>
+      <DependentUpon>RectanglerTest.xaml.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Update="Views\LinerTest.xaml">
+      <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+
 </Project>

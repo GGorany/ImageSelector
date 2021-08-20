@@ -1,6 +1,4 @@
-﻿using System.Windows.Data;
-
-using ImageSelector.ROIs;
+﻿using ImageSelector.ROIs;
 
 namespace ImageSelector.Anchors
 {
@@ -20,10 +18,6 @@ namespace ImageSelector.Anchors
                     break;
                 default: return null;
             }
-
-            //Binding binding = new Binding(Anchor.MagnificationProperty.Name);
-            //binding.Source = roi;
-            //anchor.SetBinding(Anchor.MagnificationProperty, binding);
 
             return anchor;
         }
