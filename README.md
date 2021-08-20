@@ -1,9 +1,11 @@
 # ImageSelector
 
-Image Region Selection Control for Windows WPF MVVM
+ Image Region Selection Control for Windows WPF MVVM
+
+ You can get the exact location by clicking and dragging the image.
 
 ![Test](./Test.gif)
 
 
-referenced source code here
+ referenced source code here
 https://github.com/AndrDm/uImage
