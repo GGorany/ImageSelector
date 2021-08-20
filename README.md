@@ -1,4 +1,6 @@
 # ImageSelector
 
-Image Region Selection Control for MVVM (Only Windows WPF)
+Image Region Selection Control for Windows WPF MVVM
+
+![Test](./Test.gif)
 
