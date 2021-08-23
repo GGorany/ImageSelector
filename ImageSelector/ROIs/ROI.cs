@@ -50,6 +50,7 @@ namespace ImageSelector.ROIs
             protected set { SetValue(AnchorsPropertyKey, value); }
         }
 
+
         public ROI()
         {
             Anchors = new ObservableCollection<Anchor>();
