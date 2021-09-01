@@ -12,12 +12,11 @@ namespace ImageSelector.Example.ViewModels
         #region Properties
         private string _FileName = string.Empty;
         private BitmapSource _SourceImage = null;
-        private Point _PointTopLeft = new Point(10, 10);
-        private Point _PointBottomRight = new Point(30, 40);
-        private int _TopLeftX = 0;
-        private int _TopLeftY = 0;
-        private int _BottomRightX = 0;
-        private int _BottomRightY = 0;
+        private Rect _Rectangle = Rect.Empty;
+        private int _X = 0;
+        private int _Y = 0;
+        private int _Width = 0;
+        private int _Height = 0;
 
         public string FileName
         {
@@ -31,69 +30,60 @@ namespace ImageSelector.Example.ViewModels
             set { SetProperty(ref _SourceImage, value); }
         }
 
-        public Point PointTopLeft
+        public Rect Rectangle
         {
-            get { return _PointTopLeft; }
+            get { return _Rectangle; }
             set
             {
-                _PointTopLeft = value;
-                _TopLeftX = (int)_PointTopLeft.X;
-                _TopLeftY = (int)_PointTopLeft.Y;
-                RaisePropertyChanged("TopLeftX");
-                RaisePropertyChanged("TopLeftY");
+                _Rectangle = value;
+                _X = (int)_Rectangle.X;
+                _Y = (int)_Rectangle.Y;
+                _Width = (int)_Rectangle.Width;
+                _Height = (int)_Rectangle.Height;
+                RaisePropertyChanged("X");
+                RaisePropertyChanged("Y");
+                RaisePropertyChanged("Width");
+                RaisePropertyChanged("Height");
             }
         }
 
-        public Point PointBottomRight
+        public int X
         {
-            get { return _PointBottomRight; }
+            get { return _X; }
             set
             {
-                _PointBottomRight = value;
-                _BottomRightX = (int)_PointBottomRight.X;
-                _BottomRightY = (int)_PointBottomRight.Y;
-                RaisePropertyChanged("BottomRightX");
-                RaisePropertyChanged("BottomRightY");
+                _X = value;
+                UpdateRectangle();
             }
         }
 
-        public int TopLeftX
+        public int Y
         {
-            get { return _TopLeftX; }
+            get { return _Y; }
             set
             {
-                _TopLeftX = value;
-                UpdatePointTopLeft();
+                _Y = value;
+                UpdateRectangle();
             }
         }
 
-        public int TopLeftY
+        public int Width
         {
-            get { return _TopLeftY; }
+            get { return _Width; }
             set
             {
-                _TopLeftY = value;
-                UpdatePointTopLeft();
+                _Width = value;
+                UpdateRectangle();
             }
         }
 
-        public int BottomRightX
+        public int Height
         {
-            get { return _BottomRightX; }
+            get { return _Height; }
             set
             {
-                _BottomRightX = value;
-                UpdatePointBottomRight();
-            }
-        }
-
-        public int BottomRightY
-        {
-            get { return _BottomRightY; }
-            set
-            {
-                _BottomRightY = value;
-                UpdatePointBottomRight();
+                _Height = value;
+                UpdateRectangle();
             }
         }
         #endregion
@@ -105,7 +95,7 @@ namespace ImageSelector.Example.ViewModels
         {
             var dialog = new Microsoft.Win32.OpenFileDialog();
             dialog.DefaultExt = ".jpg";
-            dialog.Filter = "image files (.jpg)|*.jpg";
+            dialog.Filter = "image files (*jpg, *.png) | *.jpg; *.png";
 
             bool? result = dialog.ShowDialog();
             if (result == true)
@@ -124,16 +114,10 @@ namespace ImageSelector.Example.ViewModels
         #endregion
 
         #region Private Method
-        private void UpdatePointTopLeft()
+        private void UpdateRectangle()
         {
-            _PointTopLeft = new Point(TopLeftX, TopLeftY);
-            RaisePropertyChanged("PointTopLeft");
-        }
-
-        private void UpdatePointBottomRight()
-        {
-            _PointBottomRight = new Point(BottomRightX, BottomRightY);
-            RaisePropertyChanged("PointBottomRight");
+            _Rectangle = new Rect(X, Y, Width, Height);
+            RaisePropertyChanged("Rectangle");
         }
         #endregion
     }

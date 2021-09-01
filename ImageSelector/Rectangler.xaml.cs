@@ -1,9 +1,6 @@
-﻿using ImageSelector.ROIs;
-
-using System;
-using System.Collections.ObjectModel;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -14,24 +11,8 @@ namespace ImageSelector
     /// </summary>
     public partial class Rectangler : UserControl
     {
-        private Point mousePosition = new Point(0, 0);
-        private ROIDescriptor _lastROIDescriptor = new ROIDescriptor();
-
-        public event EventHandler<ROIValueChangedEventArgs> ROIValueChanged;
-
-        #region Properties
-        private double _Magnification = 1.0;
-
-        public double Magnification
-        {
-            get { return _Magnification; }
-            set
-            {
-                _Magnification = value;
-                ApplyMagnification();
-            }
-        }
-        #endregion
+        private SelectingAdorner SelectingAdorner;
+        private double magnification = 1.0;
 
         #region DependencyProperties
         public static readonly DependencyProperty SourceProperty = DependencyProperty.Register(
@@ -40,17 +21,11 @@ namespace ImageSelector
             typeof(Rectangler),
             new PropertyMetadata(default(ImageSource), OnSourceChanged));
 
-        public static readonly DependencyProperty TopLeftProperty = DependencyProperty.Register(
-            "TopLeft",
-            typeof(Point),
+        public static readonly DependencyProperty RectProperty = DependencyProperty.Register(
+            "Rect",
+            typeof(Rect),
             typeof(Rectangler),
-            new PropertyMetadata(default(Point), OnTopLeftChanged));
-
-        public static readonly DependencyProperty BottomRightProperty = DependencyProperty.Register(
-            "BottomRight",
-            typeof(Point),
-            typeof(Rectangler),
-            new PropertyMetadata(default(Point), OnBottomRightChanged));
+            new PropertyMetadata(default(Rect), OnRectChanged));
 
         public ImageSource Source
         {
@@ -58,251 +33,153 @@ namespace ImageSelector
             set { SetValue(SourceProperty, value); }
         }
 
-        public Point TopLeft
+        public Rect Rect
         {
-            get { return (Point)GetValue(TopLeftProperty); }
-            set { SetValue(TopLeftProperty, value); }
-        }
-
-        public Point BottomRight
-        {
-            get { return (Point)GetValue(BottomRightProperty); }
-            set { SetValue(BottomRightProperty, value); }
+            get { return (Rect)GetValue(RectProperty); }
+            set { SetValue(RectProperty, value); }
         }
         #endregion
 
-        #region DependencyProperties ROI
-        private static readonly DependencyPropertyKey ROIListPropertyKey = DependencyProperty.RegisterReadOnly(
-            "ROIList",
-            typeof(ObservableCollection<ROI>),
-            typeof(Rectangler),
-            new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsRender));
-
-        public static readonly DependencyProperty ROIListProperty = ROIListPropertyKey.DependencyProperty;
-
-        private static readonly DependencyPropertyKey GetLastEventDataPropertyKey = DependencyProperty.RegisterReadOnly(
-            "GetLastEventData",
-            typeof(ROIDescriptor.LastEventData),
-            typeof(Rectangler),
-            new PropertyMetadata(null, OnGetLastEventDataChanged));
-
-        public static readonly DependencyProperty GetLastEventDataProperty = GetLastEventDataPropertyKey.DependencyProperty;
-
-        public ObservableCollection<ROI> ROIList
-        {
-            get { return (ObservableCollection<ROI>)GetValue(ROIListProperty); }
-            protected set { SetValue(ROIListPropertyKey, value); }
-        }
-
-        public ROIDescriptor.LastEventData GetLastEventData
-        {
-            get { return (ROIDescriptor.LastEventData)GetValue(GetLastEventDataProperty); }
-            protected set { SetValue(GetLastEventDataPropertyKey, value); }
-        }
-        #endregion
-
+        #region Constructor
         public Rectangler()
         {
             InitializeComponent();
 
             _SourceImage.LayoutTransform = new ScaleTransform();
-            _ROI.LayoutTransform = new ScaleTransform();
+            _Canvas.LayoutTransform = new ScaleTransform();
 
-            _MouseHandler.MouseLeftButtonDown += _MouseHandler_MouseLeftButtonDown;
-            _MouseHandler.MouseMove += _MouseHandler_MouseMove;
-            _MouseHandler.MouseLeftButtonUp += _MouseHandler_MouseLeftButtonUp;
             _MouseHandler.MouseWheel += _MouseHandler_MouseWheel;
 
-            ROIList = new ObservableCollection<ROI>();
-            _ROI.ItemsSource = ROIList;
+            _Canvas.Loaded += _Canvas_Loaded;
+            _Canvas.SizeChanged += _Canvas_SizeChanged;
+            _Canvas.MouseLeftButtonDown += _Canvas_MouseLeftButtonDown;
         }
+        #endregion
 
-        #region Events
+        #region Events - Properties
         private static void OnSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (!(d is Rectangler rectangler)) 
+            if (!(d is Rectangler rectangler))
                 return;
 
             if (e.NewValue is ImageSource newImage)
             {
                 rectangler._SourceImage.Source = newImage;
-                rectangler._SourceImage.Width = newImage.Width;
-                rectangler._SourceImage.Height = newImage.Height;
+
+                if (rectangler.Rect.Contains(newImage.Width, newImage.Height))
+                    rectangler.Rect = new Rect(0, 0, newImage.Width, newImage.Height);
+
+                rectangler.AdornerRect(rectangler.Rect);
             }
             else
             {
                 rectangler._SourceImage.Source = null;
-                rectangler._SourceImage.Width = double.NaN;
-                rectangler._SourceImage.Height = double.NaN;
+                rectangler.SelectingAdorner.Rect = Rect.Empty;
             }
         }
 
-        private static void OnTopLeftChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnRectChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (!(d is Rectangler rectangler))
                 return;
 
-            if (rectangler.ROIList.Count != 1)
+            if (rectangler.SelectingAdorner == default)
                 return;
 
-            if (e.NewValue is Point point)
-                (rectangler.ROIList[0] as ROIRect).TopLeftPoint = point;
-            else
-                (rectangler.ROIList[0] as ROIRect).TopLeftPoint = new Point(0, 0);
-        }
-
-        private static void OnBottomRightChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            if (!(d is Rectangler rectangler))
-                return;
-
-            if (rectangler.ROIList.Count != 1)
-                return;
-
-            if (e.NewValue is Point point)
+            if (e.NewValue != e.OldValue)
             {
-                (rectangler.ROIList[0] as ROIRect).BottomRightPoint = point;
+                rectangler.AdornerRect((Rect)e.NewValue);
             }
             else
-                (rectangler.ROIList[0] as ROIRect).BottomRightPoint = new Point(0, 0);
-        }
-
-        private void _MouseHandler_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            if (e.OriginalSource == _MouseHandler)
             {
-                ROIList.Clear();
-
-                if (Helper.IsInImageArea(ref _SourceImage, Mouse.GetPosition(_SourceImage)) == (uint)OutType.InArea)
-                    StartDrawingRectROI();
+                rectangler.SelectingAdorner.Rect = Rect.Empty;
             }
         }
+        #endregion
 
-        private void _MouseHandler_MouseMove(object sender, MouseEventArgs e)
-        {
-            mousePosition = Mouse.GetPosition(_SourceImage);
-
-            ShowMousePosition();
-            ShowRectSize();
-        }
-
-        private void _MouseHandler_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            _MouseHandler.ReleaseMouseCapture();
-        }
-
+        #region Events
         private void _MouseHandler_MouseWheel(object sender, MouseWheelEventArgs e)
         {
-            mousePosition = Mouse.GetPosition(_SourceImage);
+            Point point = Mouse.GetPosition(_Canvas);
 
             double zoom_delta = e.Delta > 0 ? .1 : -.1;
-            Magnification = (Magnification += zoom_delta).LimitToRange(.1, 10);
+            magnification = (magnification += zoom_delta).LimitToRange(.1, 10);
             ApplyMagnification();
-            ShowMousePosition();
-            ShowRectSize();
 
             // Center Viewer Around Mouse Position
             if (_ScrollViewer != null)
             {
-                _ScrollViewer.ScrollToHorizontalOffset(mousePosition.X * Magnification - Mouse.GetPosition(_ScrollViewer).X);
-                _ScrollViewer.ScrollToVerticalOffset(mousePosition.Y * Magnification - Mouse.GetPosition(_ScrollViewer).Y);
+                _ScrollViewer.ScrollToHorizontalOffset(point.X * magnification - Mouse.GetPosition(_ScrollViewer).X);
+                _ScrollViewer.ScrollToVerticalOffset(point.Y * magnification - Mouse.GetPosition(_ScrollViewer).Y);
             }
 
             e.Handled = true;
         }
 
-        private static void OnGetLastEventDataChanged(DependencyObject obj, DependencyPropertyChangedEventArgs args)
+        private void _Canvas_Loaded(object sender, RoutedEventArgs e)
         {
-            Rectangler rectangler = (Rectangler)obj;
-            ROIDescriptor.LastEventData lastEventData = (ROIDescriptor.LastEventData)args.NewValue;
-            ROIDescriptor.LastEventData other = (ROIDescriptor.LastEventData)args.OldValue;
-            if (lastEventData.type == EventType.Draw)
+            if (sender is FrameworkElement visual)
             {
-                ROIDescriptor lastROIDescriptor = rectangler._lastROIDescriptor;
-                ROIDescriptor previousROIDescriptor = rectangler.GetROIDescriptor();
-                if (!lastEventData.IsChanged(other) || !previousROIDescriptor.IsChanged(lastROIDescriptor))
-                {
-                    rectangler._lastROIDescriptor = previousROIDescriptor;
-                    rectangler.OnROIValueChanged(new ROIValueChangedEventArgs(lastEventData, lastROIDescriptor, previousROIDescriptor));
-                }
+                AdornerLayer adornerLayer = AdornerLayer.GetAdornerLayer(visual);
+                if (adornerLayer == null)
+                    return;
+
+                SelectingAdorner = new SelectingAdorner(visual);
+                adornerLayer.Add(SelectingAdorner);
+                AdornerRect(Rect);
+                SelectingAdorner.OnRectangleSizeEvent += SelectingAdorner_OnRectangleSizeEvent;
             }
         }
 
-        private void OnGetLastDrawEventUpdated(object sender, ROIDescriptor.LastEventArgs lastEventArgs)
+        private void _Canvas_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            GetLastEventData = lastEventArgs.data;
+            AdornerRect(Rect);
         }
 
-        private void OnROIValueChanged(ROIValueChangedEventArgs args)
+        private void _Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            this.ROIValueChanged?.Invoke(this, args);
+            SelectingAdorner.MouseLeftButtonDownEventHandler(sender, e);
+        }
 
-            TopLeft = args.ROI.contours[0].points[0];
-            BottomRight = args.ROI.contours[0].points[1];
+        private void SelectingAdorner_OnRectangleSizeEvent(object sender, Rect rect)
+        {
+            if (_SourceImage?.Source == null)
+                return;
+
+            if (SelectingAdorner == null)
+                return;
+
+            Rect = rect;
         }
         #endregion
 
         #region Private Method
-        private void ShowMousePosition()
-        {
-            Point point = Mouse.GetPosition(_SourceImage);
-            _Position.Text = $"MOUSE : x = {point.X:N0}, y = {point.Y:N0}";
-        }
-
-        private void ShowRectSize()
-        {
-            int w = 0;
-            int h = 0;
-
-            if (ROIList.Count != 0)
-            {
-                Point tl = (ROIList[0] as ROIRect).TopLeftPoint;
-                Point br = (ROIList[0] as ROIRect).BottomRightPoint;
-                w = (int)Math.Abs(br.X - tl.X);
-                h = (int)Math.Abs(br.Y - tl.Y);
-            }
-
-            _Size.Text = $"RECT : w = {w:N0}, h = {h:N0}";
-        }
-
         private void ApplyMagnification()
         {
             if (_SourceImage != null)
             {
                 ScaleTransform obj = (ScaleTransform)_SourceImage.LayoutTransform;
-                obj.ScaleX = obj.ScaleY = Magnification;
+                obj.ScaleX = obj.ScaleY = magnification;
                 RenderOptions.SetBitmapScalingMode(_SourceImage, BitmapScalingMode.HighQuality);
-                _Zoom.Text = $"ZOOM : {Magnification * 100:N0}%";
+                //_Zoom.Text = $"ZOOM : {magnification * 100:N0}%";
             }
 
-            if (_ROI != null)
+            if (_Canvas != null)
             {
-                ScaleTransform obj2 = (ScaleTransform)_ROI.LayoutTransform;
-                obj2.ScaleX = obj2.ScaleY = Magnification;
+                ScaleTransform obj2 = (ScaleTransform)_Canvas.LayoutTransform;
+                obj2.ScaleX = obj2.ScaleY = magnification;
             }
         }
 
-        private void StartDrawingRectROI()
+        private void AdornerRect(Rect rect)
         {
-            ROIRect rectROI = new ROIRect();
-            ROIList.Add(rectROI);
-            rectROI.TopLeftPoint = rectROI.BottomRightPoint = mousePosition;
-            rectROI.CaptureMouse();
-            rectROI.CurrentState = State.DrawingInProgress;
-            rectROI.LastROIDrawEvent += OnGetLastDrawEventUpdated;
-        }
+            if (SelectingAdorner == null) 
+                return;
 
-        private ROIDescriptor GetROIDescriptor()
-        {
-            ROIDescriptor roiDescriptor = new ROIDescriptor();
+            if (_SourceImage.Source == null) 
+                return;
 
-            if (ROIList.Count == 0)
-                return roiDescriptor;
-
-            foreach (ROI item in ROIList)
-                roiDescriptor.contours.Add(item.GetROIDescriptorContour());
-
-            return roiDescriptor;
+            SelectingAdorner.Rect = rect;
         }
         #endregion
     }

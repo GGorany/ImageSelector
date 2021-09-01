@@ -18,8 +18,7 @@
 
         <GroupBox Grid.Column="0" Header="Image Selector">
             <selector:Rectangler Source="{Binding SourceImage}"
-                                 TopLeft="{Binding PointTopLeft, Mode=TwoWay}"
-                                 BottomRight="{Binding PointBottomRight, Mode=TwoWay}"/>
+                                 Rect="{Binding Rectangle, Mode=TwoWay}"/>
         </GroupBox>
 
         <Grid Grid.Column="1">
@@ -49,13 +48,13 @@
                         </Grid.ColumnDefinitions>
 
                         <TextBlock Grid.Column="0"
-                                   Text=" TL X : "/>
+                                   Text=" X : "/>
                         <TextBox Grid.Column="1"
-                                 Text="{Binding TopLeftX}"/>
+                                 Text="{Binding X}"/>
                         <TextBlock Grid.Column="2"
-                                   Text=" TL Y : "/>
+                                   Text=" Y : "/>
                         <TextBox Grid.Column="3"
-                                 Text="{Binding TopLeftY}"/>
+                                 Text="{Binding Y}"/>
                     </Grid>
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -66,13 +65,13 @@
                         </Grid.ColumnDefinitions>
 
                         <TextBlock Grid.Column="0"
-                                   Text=" BR X : "/>
+                                   Text=" W : "/>
                         <TextBox Grid.Column="1"
-                                 Text="{Binding BottomRightX}"/>
+                                 Text="{Binding Width}"/>
                         <TextBlock Grid.Column="2"
-                                   Text=" BR Y : "/>
+                                   Text=" H : "/>
                         <TextBox Grid.Column="3"
-                                 Text="{Binding BottomRightY}"/>
+                                 Text="{Binding Height}"/>
                     </Grid>
                 </StackPanel>
             </GroupBox>

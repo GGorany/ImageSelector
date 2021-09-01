@@ -105,7 +105,7 @@ namespace ImageSelector.Example.ViewModels
         {
             var dialog = new Microsoft.Win32.OpenFileDialog();
             dialog.DefaultExt = ".jpg";
-            dialog.Filter = "image files (.jpg)|*.jpg";
+            dialog.Filter = "image files (*jpg, *.png) | *.jpg; *.png";
 
             bool? result = dialog.ShowDialog();
             if (result == true)

@@ -18,26 +18,61 @@
     </UserControl.Resources>
 
     <Grid>
-        <ScrollViewer x:Name="_ScrollViewer"
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StatusBar Grid.Row="0">
+            <StatusBar.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="100"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="100"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="100"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="100"/>
+                        </Grid.ColumnDefinitions>
+                    </Grid>
+                </ItemsPanelTemplate>
+            </StatusBar.ItemsPanel>
+            
+            <StatusBarItem>
+                <StackPanel>
+                   
+                </StackPanel>
+            </StatusBarItem>
+
+            <Separator Grid.Column="1"/>
+
+            <StatusBarItem>
+                <TextBlock Name="haha" Text="hahaha" />
+            </StatusBarItem>
+
+            <Separator Grid.Column="3"/>
+
+            <StatusBarItem>
+                <TextBlock Name="arrefg" Text="hahaha" />
+            </StatusBarItem>
+
+            <Separator Grid.Column="5"/>
+        </StatusBar>
+
+        <ScrollViewer x:Name="_ScrollViewer" Grid.Row="1"
                       HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
             <Grid Background="{DynamicResource SelectorBackground}">
                 <Image x:Name="_SourceImage" Stretch="None"/>
 
                 <Grid x:Name="_MouseHandler" Background="Transparent">
-                    <ItemsControl x:Name="_ROI" ClipToBounds="True"
-                                  Width="{Binding ActualWidth, ElementName=_SourceImage}" 
-								  Height="{Binding ActualHeight, ElementName=_SourceImage}"/>
+                    <Canvas x:Name="_Canvas" Background="Transparent"
+                            Width="{Binding ActualWidth, ElementName=_SourceImage}" 
+							Height="{Binding ActualHeight, ElementName=_SourceImage}">
+                    </Canvas>
                 </Grid>
             </Grid>
         </ScrollViewer>
-
-        <StackPanel Orientation="Vertical" VerticalAlignment="Top" HorizontalAlignment="Left">
-            <TextBox x:Name="_Zoom" Width="Auto" BorderThickness="0" HorizontalAlignment="Left"
-                     Text="ZOOM : 100%"/>
-            <TextBox x:Name="_Position" Width="Auto" BorderThickness="0" HorizontalAlignment="Left"
-                     Text="MOUSE : x = 0, y = 0"/>
-            <TextBox x:Name="_Size" Width="Auto" BorderThickness="0" HorizontalAlignment="Left"
-                     Text="RECT : w = 0, h = 0"/>
-        </StackPanel>
     </Grid>
 </UserControl>
