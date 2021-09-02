@@ -4,13 +4,11 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 
 namespace ImageSelector
 {
-    internal class SelectingAdorner : Adorner
+    internal class RectangleAdorner : Adorner
     {
-        //public event EventHandler<DoubleClickEventArgs> OnRectangleDoubleClickEvent;
         public event EventHandler<Rect> OnRectangleSizeEvent;
 
         private readonly RectangleManager _rectangleManager;
@@ -22,7 +20,7 @@ namespace ImageSelector
         private readonly Canvas _canvasOverlay;
         private readonly Canvas _originalCanvas;
 
-        public SelectingAdorner(UIElement adornedElement) : base(adornedElement)
+        public RectangleAdorner(UIElement adornedElement) : base(adornedElement)
         {
             _visualCollection = new VisualCollection(this);
             _originalCanvas = (Canvas)adornedElement;
@@ -41,6 +39,12 @@ namespace ImageSelector
             _rectangleManager.RectangleSizeChanged += (object sender, EventArgs args) => Show();
         }
 
+        public bool IsSquareMode
+        {
+            get => _rectangleManager.IsSquareMode;
+            set => _rectangleManager.IsSquareMode = value;
+        }
+
         public Rect Rect
         {
             get => _rectangleManager.Rect;
@@ -49,48 +53,6 @@ namespace ImageSelector
                 _rectangleManager.Rect = value;
                 Show();
             }
-        }
-
-        public string Text { get; set; }
-
-        /// <summary>
-        /// Get cropping areas as BitmapFrame
-        /// </summary>
-        /// <returns></returns>
-        public BitmapFrame GetCroppedBitmapFrame()
-        {
-            // 1) get current dpi
-            PresentationSource pSource = PresentationSource.FromVisual(Application.Current.MainWindow);
-            Matrix m = pSource.CompositionTarget.TransformToDevice;
-            double dpiX = m.M11 * 96;
-            double dpiY = m.M22 * 96;
-
-            // 2) create RenderTargetBitmap
-            RenderTargetBitmap elementBitmap =
-                new RenderTargetBitmap((int)_originalCanvas.ActualWidth, (int)_originalCanvas.ActualHeight, dpiX, dpiY,
-                    PixelFormats.Pbgra32);
-
-            elementBitmap = new RenderTargetBitmap((int)_originalCanvas.RenderSize.Width,
-                (int)_originalCanvas.RenderSize.Height, dpiX, dpiY, PixelFormats.Default);
-
-            //Important
-            _originalCanvas.Measure(_originalCanvas.RenderSize);
-            _originalCanvas.Arrange(new Rect(_originalCanvas.RenderSize));
-
-            // 3) draw element
-            elementBitmap.Render(_originalCanvas);
-
-            if (VisualTreeHelper.GetParent(_originalCanvas) is UIElement parent)
-            {
-                //Important
-                parent.Measure(_originalCanvas.RenderSize);
-                parent.Arrange(new Rect(_originalCanvas.RenderSize));
-            }
-
-            var crop = new CroppedBitmap(elementBitmap,
-                new Int32Rect((int)_rectangleManager.TopLeft.X, (int)_rectangleManager.TopLeft.Y,
-                    (int)_rectangleManager.RectangleWidth, (int)_rectangleManager.RectangleHeight));
-            return BitmapFrame.Create(crop);
         }
 
         /// <summary>
@@ -135,7 +97,7 @@ namespace ImageSelector
                 Show();
             }
 
-            //OnRectangleSizeEvent?.Invoke(sender, _rectangleManager.Rect);
+            OnRectangleSizeEvent?.Invoke(sender, _rectangleManager.Rect);
         }
 
         private void MouseLeftButtonUpEventHandler(object sender, MouseButtonEventArgs e)

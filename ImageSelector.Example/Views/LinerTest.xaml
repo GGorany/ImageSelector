@@ -16,7 +16,7 @@
             <ColumnDefinition Width="2*"/>
         </Grid.ColumnDefinitions>
 
-        <GroupBox Grid.Column="0" Header="Image Selector">
+        <GroupBox Grid.Column="0" Header="Image Selector - Liner">
             <!--<selector:Liner Source="{Binding SourceImage}"
                             StartPoint="{Binding StartPoint, Mode=TwoWay}"
                             EndPoint="{Binding EndPoint, Mode=TwoWay}"/>-->

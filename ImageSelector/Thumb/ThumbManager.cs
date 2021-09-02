@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
@@ -38,16 +39,19 @@ namespace ImageSelector
             ThumbSelect thumb = sender as ThumbSelect;
 
             double resultThumbLeft = Canvas.GetLeft(thumb) + e.HorizontalChange;
+            double thumbResultTop = Canvas.GetTop(thumb) + e.VerticalChange;
 
             if (resultThumbLeft > _canvas.ActualWidth)
                 resultThumbLeft = _canvas.ActualWidth;
 
-            double thumbResultTop = Canvas.GetTop(thumb) + e.VerticalChange;
             if (thumbResultTop + _thumbSize / 2 > _canvas.ActualHeight)
                 thumbResultTop = _canvas.ActualHeight - _thumbSize / 2;
 
             double resultHeight = thumbResultTop - _rectangleManager.TopLeft.Y + _thumbSize / 2;
             double resultWidth = resultThumbLeft - _rectangleManager.TopLeft.X;
+
+            if (_rectangleManager.IsSquareMode)
+                resultHeight = resultWidth = Math.Min(resultHeight, resultWidth);
 
             UpdateRectangeSize(null, null, resultHeight, resultWidth);
         }
@@ -71,6 +75,22 @@ namespace ImageSelector
             double offsetLeft = Canvas.GetLeft(thumb) - newLeft;
             double resultWidth = _rectangleManager.RectangleWidth + offsetLeft;
             double resultLeft = newLeft + _thumbSize / 2;
+
+            if (_rectangleManager.IsSquareMode)
+            {
+                if (resultHeight > resultWidth)
+                {
+                    double hoffset = resultHeight - resultWidth;
+                    resultTop = resultTop + hoffset;
+                    resultHeight = resultWidth;
+                }
+                else if (resultHeight < resultWidth)
+                {
+                    double woffset = resultWidth - resultHeight;
+                    resultLeft = resultLeft + woffset;
+                    resultWidth = resultHeight;
+                }
+            }
 
             UpdateRectangeSize(resultLeft, resultTop, resultHeight, resultWidth);
         }

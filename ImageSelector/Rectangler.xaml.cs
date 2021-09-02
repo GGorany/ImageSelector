@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -11,8 +12,10 @@ namespace ImageSelector
     /// </summary>
     public partial class Rectangler : UserControl
     {
-        private SelectingAdorner SelectingAdorner;
+        private RectangleAdorner RectangleAdorner;
         private double magnification = 1.0;
+        private bool isSetFromSource = false;
+        private bool isSquareMode = false;
 
         #region DependencyProperties
         public static readonly DependencyProperty SourceProperty = DependencyProperty.Register(
@@ -51,8 +54,12 @@ namespace ImageSelector
             _MouseHandler.MouseWheel += _MouseHandler_MouseWheel;
 
             _Canvas.Loaded += _Canvas_Loaded;
-            _Canvas.SizeChanged += _Canvas_SizeChanged;
             _Canvas.MouseLeftButtonDown += _Canvas_MouseLeftButtonDown;
+
+            _ModeToggle.Click += _ModeToggle_Click; ;
+
+            _Size.Text = $" Size: 0 x 0";
+            _Zoom.Text = $" Zoom: {magnification * 100:N0}%";
         }
         #endregion
 
@@ -65,6 +72,7 @@ namespace ImageSelector
             if (e.NewValue is ImageSource newImage)
             {
                 rectangler._SourceImage.Source = newImage;
+                rectangler._Size.Text = $" Size: {(int)newImage.Width} x {(int)newImage.Height}";
 
                 if (rectangler.Rect.Contains(newImage.Width, newImage.Height))
                     rectangler.Rect = new Rect(0, 0, newImage.Width, newImage.Height);
@@ -74,7 +82,7 @@ namespace ImageSelector
             else
             {
                 rectangler._SourceImage.Source = null;
-                rectangler.SelectingAdorner.Rect = Rect.Empty;
+                rectangler.RectangleAdorner.Rect = Rect.Empty;
             }
         }
 
@@ -83,8 +91,14 @@ namespace ImageSelector
             if (!(d is Rectangler rectangler))
                 return;
 
-            if (rectangler.SelectingAdorner == default)
+            if (rectangler.RectangleAdorner == default)
                 return;
+
+            if (rectangler.isSetFromSource)
+            {
+                rectangler.isSetFromSource = false;
+                return;
+            }
 
             if (e.NewValue != e.OldValue)
             {
@@ -92,7 +106,7 @@ namespace ImageSelector
             }
             else
             {
-                rectangler.SelectingAdorner.Rect = Rect.Empty;
+                rectangler.RectangleAdorner.Rect = Rect.Empty;
             }
         }
         #endregion
@@ -124,21 +138,16 @@ namespace ImageSelector
                 if (adornerLayer == null)
                     return;
 
-                SelectingAdorner = new SelectingAdorner(visual);
-                adornerLayer.Add(SelectingAdorner);
+                RectangleAdorner = new RectangleAdorner(visual);
+                adornerLayer.Add(RectangleAdorner);
                 AdornerRect(Rect);
-                SelectingAdorner.OnRectangleSizeEvent += SelectingAdorner_OnRectangleSizeEvent;
+                RectangleAdorner.OnRectangleSizeEvent += SelectingAdorner_OnRectangleSizeEvent;
             }
-        }
-
-        private void _Canvas_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            AdornerRect(Rect);
         }
 
         private void _Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            SelectingAdorner.MouseLeftButtonDownEventHandler(sender, e);
+            RectangleAdorner.MouseLeftButtonDownEventHandler(sender, e);
         }
 
         private void SelectingAdorner_OnRectangleSizeEvent(object sender, Rect rect)
@@ -146,10 +155,25 @@ namespace ImageSelector
             if (_SourceImage?.Source == null)
                 return;
 
-            if (SelectingAdorner == null)
+            if (RectangleAdorner == null)
                 return;
 
+            if (Rect == rect)
+                return;
+
+            isSetFromSource = true;
             Rect = rect;
+            _Region.Text = $" X: {Rect.X} Y: {Rect.Y} ({Rect.Width} x {Rect.Height})";
+        }
+
+        private void _ModeToggle_Click(object sender, RoutedEventArgs e)
+        {
+            if (_ModeToggle.IsChecked == true)
+                isSquareMode = true;
+            else
+                isSquareMode = false;
+
+            RectangleAdorner.IsSquareMode = isSquareMode;
         }
         #endregion
 
@@ -161,7 +185,7 @@ namespace ImageSelector
                 ScaleTransform obj = (ScaleTransform)_SourceImage.LayoutTransform;
                 obj.ScaleX = obj.ScaleY = magnification;
                 RenderOptions.SetBitmapScalingMode(_SourceImage, BitmapScalingMode.HighQuality);
-                //_Zoom.Text = $"ZOOM : {magnification * 100:N0}%";
+                _Zoom.Text = $" Zoom: {magnification * 100:N0}%";
             }
 
             if (_Canvas != null)
@@ -173,13 +197,13 @@ namespace ImageSelector
 
         private void AdornerRect(Rect rect)
         {
-            if (SelectingAdorner == null) 
+            if (RectangleAdorner == null) 
                 return;
 
             if (_SourceImage.Source == null) 
                 return;
 
-            SelectingAdorner.Rect = rect;
+            RectangleAdorner.Rect = rect;
         }
         #endregion
     }

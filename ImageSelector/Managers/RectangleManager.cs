@@ -59,6 +59,8 @@ namespace ImageSelector
             set => UpdateRectangle(value.X, value.Y, value.Width, value.Height);
         }
 
+        public bool IsSquareMode { get; set; } = false;
+
         public RectangleManager(Canvas canvasOverlay)
         {
             _canvas = canvasOverlay;
@@ -173,6 +175,7 @@ namespace ImageSelector
                 {
                     height = _canvas.ActualHeight - top;
                 }
+
                 UpdateRectangle(left, top, width, height);
                 return;
             }
@@ -212,6 +215,7 @@ namespace ImageSelector
                 {
                     top = 0;
                 }
+
                 // Update the rectangle.
                 UpdateRectangle(left, top, width, height);
                 _mouseLastPoint = mouseClickPoint;
