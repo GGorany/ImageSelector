@@ -6,14 +6,14 @@ using System.Windows.Input;
 
 namespace ImageSelector
 {
-    internal class ThumbManager
+    internal class ThumbRectManager : IThumbManager
     {
-        private readonly ThumbSelect _topLeft, _bottomRight;
+        private readonly ThumbRect _topLeft, _bottomRight;
         private readonly Canvas _canvas;
         private readonly RectangleManager _rectangleManager;
         private readonly double _thumbSize;
 
-        public ThumbManager(Canvas canvas, RectangleManager rectangleManager)
+        public ThumbRectManager(Canvas canvas, RectangleManager rectangleManager)
         {
             //  initizalize
             _canvas = canvas;
@@ -21,8 +21,8 @@ namespace ImageSelector
             _thumbSize = 10;
 
             //  create thumbs with factory
-            _topLeft = ThumbFactory.CreateThumb(ThumbFactory.ThumbPosition.TopLeft, _canvas, _thumbSize);
-            _bottomRight = ThumbFactory.CreateThumb(ThumbFactory.ThumbPosition.BottomRight, _canvas, _thumbSize);
+            _topLeft = ThumbFactory.CreateThumbRect(ThumbFactory.ThumbPosition.TopLeft, _canvas, _thumbSize);
+            _bottomRight = ThumbFactory.CreateThumbRect(ThumbFactory.ThumbPosition.BottomRight, _canvas, _thumbSize);
 
             //  subsctibe to mouse events
             _topLeft.DragDelta += new DragDeltaEventHandler(TopLeftDragDeltaEventHandler);
@@ -36,7 +36,7 @@ namespace ImageSelector
 
         private void BottomRightDragDeltaEventHandler(object sender, DragDeltaEventArgs e)
         {
-            ThumbSelect thumb = sender as ThumbSelect;
+            ThumbRect thumb = sender as ThumbRect;
 
             double resultThumbLeft = Canvas.GetLeft(thumb) + e.HorizontalChange;
             double thumbResultTop = Canvas.GetTop(thumb) + e.VerticalChange;
@@ -58,7 +58,7 @@ namespace ImageSelector
 
         private void TopLeftDragDeltaEventHandler(object sender, DragDeltaEventArgs e)
         {
-            ThumbSelect thumb = sender as ThumbSelect;
+            ThumbRect thumb = sender as ThumbRect;
 
             double newTop = Canvas.GetTop(thumb) + e.VerticalChange;
             double newLeft = Canvas.GetLeft(thumb) + e.HorizontalChange;
@@ -155,13 +155,13 @@ namespace ImageSelector
 
         private void PreviewMouseLeftButtonDownGenericHandler(object sender, MouseButtonEventArgs e)
         {
-            ThumbSelect thumb = sender as ThumbSelect;
+            ThumbRect thumb = sender as ThumbRect;
             thumb.CaptureMouse();
         }
 
         private void PreviewMouseLeftButtonUpGenericHandler(object sender, MouseButtonEventArgs e)
         {
-            ThumbSelect thumb = sender as ThumbSelect;
+            ThumbRect thumb = sender as ThumbRect;
             thumb.ReleaseMouseCapture();
         }
     }

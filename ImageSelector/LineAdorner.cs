@@ -7,11 +7,17 @@ using System.Windows.Media;
 
 namespace ImageSelector
 {
-    internal class RectangleAdorner : Adorner
+    internal class LineChangeEventArgs : EventArgs
     {
-        public event EventHandler<Rect> OnRectangleSizeEvent;
+        public Point SP { get; set; }
+        public Point EP { get; set; }
+    }
 
-        private readonly RectangleManager _rectangleManager;
+    internal class LineAdorner : Adorner
+    {
+        public event EventHandler<LineChangeEventArgs> OnLineChangeEvent;
+
+        private readonly LineManager _lineManager;
         private readonly IOverlayManager _overlayManager;
         private readonly IThumbManager _thumbManager;
 
@@ -20,14 +26,14 @@ namespace ImageSelector
         private readonly Canvas _canvasOverlay;
         private readonly Canvas _originalCanvas;
 
-        public RectangleAdorner(UIElement adornedElement) : base(adornedElement)
+        public LineAdorner(UIElement adornedElement) : base(adornedElement)
         {
             _visualCollection = new VisualCollection(this);
             _originalCanvas = (Canvas)adornedElement;
             _canvasOverlay = new Canvas();
-            _rectangleManager = new RectangleManager(_canvasOverlay);
-            _overlayManager = new OverlayRectManager(_canvasOverlay, _rectangleManager);
-            _thumbManager = new ThumbRectManager(_canvasOverlay, _rectangleManager);
+            _lineManager = new LineManager(_canvasOverlay);
+            _overlayManager = new OverlayLineManager(_canvasOverlay, _lineManager);
+            _thumbManager = new ThumbLineManager(_canvasOverlay, _lineManager);
             _visualCollection.Add(_canvasOverlay);
 
             //add event handlers
@@ -36,21 +42,25 @@ namespace ImageSelector
             MouseLeftButtonUp += MouseLeftButtonUpEventHandler;
             Loaded += (object sender, RoutedEventArgs args) => Show();
             _originalCanvas.SizeChanged += (object sender, SizeChangedEventArgs e) => Show();
-            _rectangleManager.RectangleSizeChanged += (object sender, EventArgs args) => Show();
+            _lineManager.LineChanged += (object sender, EventArgs args) => Show();
         }
 
-        public bool IsSquareMode
+        public Point StartPoint
         {
-            get => _rectangleManager.IsSquareMode;
-            set => _rectangleManager.IsSquareMode = value;
-        }
-
-        public Rect Rect
-        {
-            get => _rectangleManager.Rect;
+            get => _lineManager.StartPoint;
             set
             {
-                _rectangleManager.Rect = value;
+                _lineManager.StartPoint = value;
+                Show();
+            }
+        }
+
+        public Point EndPoint
+        {
+            get => _lineManager.EndPoint;
+            set
+            {
+                _lineManager.EndPoint = value;
                 Show();
             }
         }
@@ -64,9 +74,9 @@ namespace ImageSelector
         {
             CaptureMouse();
             if (e == null) throw new ArgumentNullException(nameof(e));
-            _rectangleManager.MouseLeftButtonDownEventHandler(e);
+            _lineManager.MouseLeftButtonDownEventHandler(e);
             _overlayManager.UpdateOverlay();
-            if (_rectangleManager.RectangleWidth == 0 && _rectangleManager.RectangleHeight == 0)
+            if (_lineManager.StartPoint == _lineManager.EndPoint)
             {
                 _thumbManager.ShowThumbs(false);
             }
@@ -75,37 +85,39 @@ namespace ImageSelector
 
         public void Show()
         {
-            if (Rect.IsEmpty)
-            {
-                _overlayManager.UpdateOverlay();
+            if (StartPoint == EndPoint)
                 _thumbManager.ShowThumbs(false);
-                _thumbManager.UpdateThumbsPosition();
-            }
             else
-            {
-                _overlayManager.UpdateOverlay();
                 _thumbManager.ShowThumbs(true);
-                _thumbManager.UpdateThumbsPosition();
-            }
+
+            _overlayManager.UpdateOverlay();
+            _thumbManager.UpdateThumbsPosition();
         }
 
         private void MouseMoveEventHandler(object sender, MouseEventArgs e)
         {
             if (_isMouseLeftButtonDown)
             {
-                _rectangleManager.MouseMoveEventHandler(e);
+                _lineManager.MouseMoveEventHandler(e);
                 Show();
             }
 
-            OnRectangleSizeEvent?.Invoke(sender, _rectangleManager.Rect);
+            LineChangeEventArgs args = new LineChangeEventArgs();
+            args.SP = _lineManager.StartPoint;
+            args.EP = _lineManager.EndPoint;
+            OnLineChangeEvent?.Invoke(sender, args);
         }
 
         private void MouseLeftButtonUpEventHandler(object sender, MouseButtonEventArgs e)
         {
-            _rectangleManager.MouseLeftButtonUpEventHandler();
+            _lineManager.MouseLeftButtonUpEventHandler();
             ReleaseMouseCapture();
             _isMouseLeftButtonDown = false;
-            OnRectangleSizeEvent?.Invoke(sender, _rectangleManager.Rect);
+
+            LineChangeEventArgs args = new LineChangeEventArgs();
+            args.SP = _lineManager.StartPoint;
+            args.EP = _lineManager.EndPoint;
+            OnLineChangeEvent?.Invoke(sender, args);
         }
 
         // Override the VisualChildrenCount properties to interface with 

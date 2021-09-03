@@ -4,14 +4,14 @@ using System.Windows.Media;
 
 namespace ImageSelector
 {
-    internal class OverlayManager
+    internal class OverlayRectManager : IOverlayManager
     {
         private readonly Canvas _canvas;
         private readonly RectangleManager _rectangleManager;
 
         private GeometryGroup _geometryGroup;
 
-        public OverlayManager(Canvas canvas, RectangleManager rectangleManager)
+        public OverlayRectManager(Canvas canvas, RectangleManager rectangleManager)
         {
             _canvas = canvas;
             _rectangleManager = rectangleManager;

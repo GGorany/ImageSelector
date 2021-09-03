@@ -22,15 +22,26 @@ namespace ImageSelector
         /// <param name="canvas">Parent UI element that we will attach thumb as child</param>
         /// <param name="size">Size of thumb</param>
         /// <returns></returns>
-        public static ThumbSelect CreateThumb(ThumbPosition thumbPosition, Canvas canvas, double size)
+        public static ThumbRect CreateThumbRect(ThumbPosition thumbPosition, Canvas canvas, double size)
         {
-            ThumbSelect customThumb = new ThumbSelect(size)
+            ThumbRect thumbRect = new ThumbRect(size)
             {
                 Cursor = GetCursor(thumbPosition),
                 Visibility = Visibility.Hidden
             };
-            canvas.Children.Add(customThumb);
-            return customThumb;
+            canvas.Children.Add(thumbRect);
+            return thumbRect;
+        }
+
+        public static ThumbCircle CreateThumbCircle(Canvas canvas, double size)
+        {
+            ThumbCircle thumbCircle = new ThumbCircle(size)
+            {
+                Cursor = Cursors.SizeAll,
+                Visibility = Visibility.Hidden
+            };
+            canvas.Children.Add(thumbCircle);
+            return thumbCircle;
         }
 
         /// <summary>

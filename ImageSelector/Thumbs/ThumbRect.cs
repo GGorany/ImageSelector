@@ -5,13 +5,19 @@ using System.Windows.Media;
 
 namespace ImageSelector
 {
-    internal class ThumbSelect : Thumb
+    internal class ThumbRect : Thumb, IThumb
     {
-        public double ThumbSize { get; }
+        public double ThumbSize { get; private set; }
 
-        public ThumbSelect(double thumbSize)
+        public ThumbRect(double thumbSize)
         {
             ThumbSize = thumbSize;
+        }
+
+        protected override void OnRender(DrawingContext drawingContext)
+        {
+            drawingContext.DrawRectangle(Brushes.White, new Pen(Brushes.Red, 2), new Rect(new Size(ThumbSize, ThumbSize)));
+            drawingContext.DrawRectangle(Brushes.Red, new Pen(Brushes.Red, 0), new Rect(2, 2, 6, 6));
         }
 
         protected override Visual GetVisualChild(int index)
@@ -19,21 +25,6 @@ namespace ImageSelector
             return null;
         }
 
-        /// <summary>
-        /// Custom visual style of thumb
-        /// </summary>
-        /// <param name="drawingContext"></param>
-        protected override void OnRender(DrawingContext drawingContext)
-        {
-            drawingContext.DrawRectangle(Brushes.White, new Pen(Brushes.Red, 2), new Rect(new Size(ThumbSize, ThumbSize)));
-            drawingContext.DrawRectangle(Brushes.Red, new Pen(Brushes.Red, 0), new Rect(2, 2, 6, 6));
-        }
-
-        /// <summary>
-        /// Set thumb to corresponding positions
-        /// </summary>
-        /// <param name="x">X coordinate</param>
-        /// <param name="y">Y coordinate</param>
         public void SetPosition(double x, double y)
         {
             Canvas.SetTop(this, y - ThumbSize / 2);
