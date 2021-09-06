@@ -10,7 +10,7 @@
 
 
 
-## How to bind
+### How to bind
 ![xmlns](./xmlns.png)
 ![RectangleBinding](./RectangleBinding.png)
 ![LineBinding](./LineBinding.png)
