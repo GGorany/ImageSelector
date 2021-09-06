@@ -17,9 +17,9 @@
         </Grid.ColumnDefinitions>
 
         <GroupBox Grid.Column="0" Header="Image Selector - Liner">
-            <!--<selector:Liner Source="{Binding SourceImage}"
+            <selector:Liner Source="{Binding SourceImage}"
                             StartPoint="{Binding StartPoint, Mode=TwoWay}"
-                            EndPoint="{Binding EndPoint, Mode=TwoWay}"/>-->
+                            EndPoint="{Binding EndPoint, Mode=TwoWay}"/>
         </GroupBox>
 
         <Grid Grid.Column="1">

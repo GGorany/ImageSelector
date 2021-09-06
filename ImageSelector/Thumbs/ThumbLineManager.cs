@@ -36,63 +36,46 @@ namespace ImageSelector
 
         private void StartPointDragDeltaEventHandler(object sender, DragDeltaEventArgs e)
         {
-            ThumbRect thumb = sender as ThumbRect;
+            ThumbCircle thumb = sender as ThumbCircle;
 
-            double resultThumbLeft = Canvas.GetLeft(thumb) + e.HorizontalChange;
-            double thumbResultTop = Canvas.GetTop(thumb) + e.VerticalChange;
+            double newX = Canvas.GetLeft(thumb) + e.HorizontalChange;
+            double newY = Canvas.GetTop(thumb) + e.VerticalChange;
 
-            if (resultThumbLeft > _canvas.ActualWidth)
-                resultThumbLeft = _canvas.ActualWidth;
+            if (newX < 0)
+                newX = 0;
 
-            if (thumbResultTop + _thumbSize / 2 > _canvas.ActualHeight)
-                thumbResultTop = _canvas.ActualHeight - _thumbSize / 2;
+            if (newY < 0)
+                newY = 0;
 
-            double resultHeight = thumbResultTop - _rectangleManager.TopLeft.Y + _thumbSize / 2;
-            double resultWidth = resultThumbLeft - _rectangleManager.TopLeft.X;
+            if (newX > _canvas.ActualWidth)
+                newX = _canvas.ActualWidth;
 
-            if (_rectangleManager.IsSquareMode)
-                resultHeight = resultWidth = Math.Min(resultHeight, resultWidth);
+            if (newY > _canvas.ActualHeight)
+                newY = _canvas.ActualHeight;
 
-            UpdateRectangeSize(null, null, resultHeight, resultWidth);
+            UpdateLine(newX, newY, _lineManager.EndPoint.X, _lineManager.EndPoint.Y);
         }
 
         private void EndPointDragDeltaEventHandler(object sender, DragDeltaEventArgs e)
         {
-            ThumbRect thumb = sender as ThumbRect;
+            ThumbCircle thumb = sender as ThumbCircle;
 
-            double newTop = Canvas.GetTop(thumb) + e.VerticalChange;
-            double newLeft = Canvas.GetLeft(thumb) + e.HorizontalChange;
+            double newX = Canvas.GetLeft(thumb) + e.HorizontalChange;
+            double newY = Canvas.GetTop(thumb) + e.VerticalChange;
 
-            if (newTop < 0)
-                newTop = -_thumbSize / 2;
-            if (newLeft < 0)
-                newLeft = -_thumbSize / 2;
+            if (newX < 0)
+                newX = 0;
 
-            double offsetTop = Canvas.GetTop(thumb) - newTop;
-            double resultHeight = _rectangleManager.RectangleHeight + offsetTop;
-            double resultTop = newTop + _thumbSize / 2;
+            if (newY < 0)
+                newY = 0;
 
-            double offsetLeft = Canvas.GetLeft(thumb) - newLeft;
-            double resultWidth = _rectangleManager.RectangleWidth + offsetLeft;
-            double resultLeft = newLeft + _thumbSize / 2;
+            if (newX > _canvas.ActualWidth)
+                newX = _canvas.ActualWidth;
 
-            if (_rectangleManager.IsSquareMode)
-            {
-                if (resultHeight > resultWidth)
-                {
-                    double hoffset = resultHeight - resultWidth;
-                    resultTop = resultTop + hoffset;
-                    resultHeight = resultWidth;
-                }
-                else if (resultHeight < resultWidth)
-                {
-                    double woffset = resultWidth - resultHeight;
-                    resultLeft = resultLeft + woffset;
-                    resultWidth = resultHeight;
-                }
-            }
+            if (newY > _canvas.ActualHeight)
+                newY = _canvas.ActualHeight;
 
-            UpdateRectangeSize(resultLeft, resultTop, resultHeight, resultWidth);
+            UpdateLine(_lineManager.StartPoint.X, _lineManager.StartPoint.Y, newX, newY);
         }
 
         /// <summary>
@@ -100,10 +83,10 @@ namespace ImageSelector
         /// </summary>
         public void UpdateThumbsPosition()
         {
-            if (_rectangleManager.RectangleHeight > 0 && _rectangleManager.RectangleWidth > 0)
+            if (_lineManager.StartPoint != _lineManager.EndPoint)
             {
-                _topLeft.SetPosition(_rectangleManager.TopLeft.X, _rectangleManager.TopLeft.Y);
-                _bottomRight.SetPosition(_rectangleManager.TopLeft.X + _rectangleManager.RectangleWidth, _rectangleManager.TopLeft.Y + _rectangleManager.RectangleHeight);
+                _startPoint.SetPosition(_lineManager.StartPoint.X, _lineManager.StartPoint.Y);
+                _endPoint.SetPosition(_lineManager.EndPoint.X, _lineManager.EndPoint.Y);
             }
         }
 
@@ -113,43 +96,21 @@ namespace ImageSelector
         /// <param name="isVisble">Set current visibility</param>
         public void ShowThumbs(bool isVisble)
         {
-            if (isVisble && _rectangleManager.RectangleHeight > 0 && _rectangleManager.RectangleWidth > 0)
+            if (isVisble && (_lineManager.StartPoint != _lineManager.EndPoint))
             {
-                _topLeft.Visibility = Visibility.Visible;
-                _bottomRight.Visibility = Visibility.Visible;
-
+                _startPoint.Visibility = Visibility.Visible;
+                _endPoint.Visibility = Visibility.Visible;
             }
             else
             {
-                _topLeft.Visibility = Visibility.Hidden;
-                _bottomRight.Visibility = Visibility.Hidden;
+                _startPoint.Visibility = Visibility.Hidden;
+                _endPoint.Visibility = Visibility.Hidden;
             }
         }
 
-        /// <summary>
-        /// Update cropping rectangle
-        /// </summary>
-        /// <param name="left">Left rectangle coordinate</param>
-        /// <param name="top">Top rectangle coordinate</param>
-        /// <param name="height">Height of rectangle</param>
-        /// <param name="width">Width of rectangle</param>
-        private void UpdateRectangeSize(double? left, double? top, double? height, double? width)
+        private void UpdateLine(double x1, double y1, double x2, double y2)
         {
-            double resultLeft = _rectangleManager.TopLeft.X;
-            double resultTop = _rectangleManager.TopLeft.Y;
-            double resultHeight = _rectangleManager.RectangleHeight;
-            double resultWidth = _rectangleManager.RectangleWidth;
-
-            if (left != null)
-                resultLeft = (double)left;
-            if (top != null)
-                resultTop = (double)top;
-            if (height != null)
-                resultHeight = (double)height;
-            if (width != null)
-                resultWidth = (double)width;
-
-            _rectangleManager.UpdateRectangle(resultLeft, resultTop, resultWidth, resultHeight);
+            _lineManager.UpdateLine(x1, y1, x2, y2);
             UpdateThumbsPosition();
         }
 

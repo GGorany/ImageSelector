@@ -12,8 +12,8 @@ namespace ImageSelector.Example.ViewModels
         #region Properties
         private string _FileName = string.Empty;
         private BitmapSource _SourceImage = null;
-        private Point _StartPoint = new Point(10, 10);
-        private Point _EndPoint = new Point(30, 40);
+        private Point _StartPoint = new Point(0, 0);
+        private Point _EndPoint = new Point(0, 0);
         private int _StartPointX = 0;
         private int _StartPointY = 0;
         private int _EndPointX = 0;

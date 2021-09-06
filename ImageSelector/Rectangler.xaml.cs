@@ -108,6 +108,8 @@ namespace ImageSelector
             {
                 rectangler.RectangleAdorner.Rect = Rect.Empty;
             }
+
+            rectangler.UpdateRegionText();
         }
         #endregion
 
@@ -163,7 +165,7 @@ namespace ImageSelector
 
             isSetFromSource = true;
             Rect = rect;
-            _Region.Text = $" X: {Rect.X} Y: {Rect.Y} ({Rect.Width} x {Rect.Height})";
+            UpdateRegionText();
         }
 
         private void _ModeToggle_Click(object sender, RoutedEventArgs e)
@@ -193,6 +195,11 @@ namespace ImageSelector
                 ScaleTransform obj2 = (ScaleTransform)_Canvas.LayoutTransform;
                 obj2.ScaleX = obj2.ScaleY = magnification;
             }
+        }
+
+        private void UpdateRegionText()
+        {
+            _Region.Text = $" X: {Rect.X} Y: {Rect.Y} ({Rect.Width} x {Rect.Height})";
         }
 
         private void AdornerRect(Rect rect)

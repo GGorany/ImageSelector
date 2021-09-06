@@ -18,7 +18,7 @@ namespace ImageSelector
         public static readonly DependencyProperty SourceProperty = DependencyProperty.Register(
             "Source",
             typeof(ImageSource),
-            typeof(Rectangler),
+            typeof(Liner),
             new PropertyMetadata(default(ImageSource), OnSourceChanged));
 
         public static readonly DependencyProperty StartPointProperty = DependencyProperty.Register(
@@ -115,6 +115,8 @@ namespace ImageSelector
             {
                 liner.LineAdorner.StartPoint = new Point(0, 0);
             }
+
+            liner.UpdateLineText();
         }
 
         private static void OnEndPointChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -133,6 +135,8 @@ namespace ImageSelector
             {
                 liner.LineAdorner.EndPoint = new Point(0, 0);
             }
+
+            liner.UpdateLineText();
         }
         #endregion
 
@@ -189,7 +193,7 @@ namespace ImageSelector
             if (EndPoint != e.EP)
                 EndPoint = e.EP;
 
-            _Line.Text = $" SP X: {StartPoint.X}, SP Y: {StartPoint.Y}, EP X: {EndPoint.X}, EP Y: {EndPoint.Y}";
+            UpdateLineText();
         }
         #endregion
 
@@ -209,6 +213,11 @@ namespace ImageSelector
                 ScaleTransform obj2 = (ScaleTransform)_Canvas.LayoutTransform;
                 obj2.ScaleX = obj2.ScaleY = magnification;
             }
+        }
+
+        private void UpdateLineText()
+        {
+            _Line.Text = $" SP X: {(int)StartPoint.X}, SP Y: {(int)StartPoint.Y}, EP X: {(int)EndPoint.X}, EP Y: {(int)EndPoint.Y}";
         }
 
         private void AdornerLine(Point sp, Point ep)

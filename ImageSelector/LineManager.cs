@@ -15,32 +15,19 @@ namespace ImageSelector
         private readonly Line _dashedLine;
         private readonly Canvas _canvas;
         private bool _isDrawing;
-        private bool _isDragging;
-
-        private Point _StartPoint = new Point();
-        private Point _EndPoint = new Point();
 
         private Point _mouseStartPoint;
-        private Point _mouseLastPoint;
 
         public Point StartPoint 
         { 
-            get => _StartPoint;
-            set
-            {
-                _StartPoint = value;
-                UpdateLine(_StartPoint, _EndPoint);
-            }
+            get => new Point(_line.X1, _line.Y1);
+            set => UpdateLine(value.X, value.Y, EndPoint.X, EndPoint.Y);
         }
 
         public Point EndPoint
         {
-            get => _EndPoint;
-            set
-            {
-                _EndPoint = value;
-                UpdateLine(_StartPoint, _EndPoint);
-            }
+            get => new Point(_line.X2, _line.Y2);
+            set => UpdateLine(StartPoint.X, StartPoint.Y, value.X, value.Y);
         }
 
         public LineManager(Canvas canvasOverlay)
@@ -82,42 +69,10 @@ namespace ImageSelector
         public void MouseLeftButtonDownEventHandler(MouseButtonEventArgs e)
         {
             _canvas.CaptureMouse();
-            //get mouse click point relative to canvas overlay
-            Point mouseClickPoint = e.GetPosition(_canvas);
+            Point mousePoint = e.GetPosition(_canvas);
 
-            /*
-            //if we click outside of rectengle and rectangle already exist, start recreating
-            if ((_rectangle.Height != 0 || _rectangle.Width != 0) &&
-                touch == TouchPoint.OutsideRectangle)
-            {
-                //reset existing rectangle
-                UpdateRectangle(0, 0, 0, 0);
-                //start drawing
-                _isDrawing = true;
-            }
-            */
-
-            //if rectangle not created - start creating
-            if (_line.X1 == 0 && _line.Y1 == 0 && _line.X2 == 0 && _line.Y2 == 0)
-            {
-                _mouseStartPoint = mouseClickPoint;
-                _isDrawing = true;
-            }
-
-            /*
-            //if rectangle is created and we click inside rectangle - start dragging
-            if ((_rectangle.Height != 0 && _rectangle.Width != 0)
-                && touch != TouchPoint.OutsideRectangle)
-            {
-                if (e.ClickCount == 2)
-                {
-                    OnRectangleDoubleClickEvent(this, EventArgs.Empty);
-                    return;
-                }
-                _isDragging = true;
-                _mouseLastPoint = mouseClickPoint;
-            }
-            */
+            _mouseStartPoint = mousePoint;
+            _isDrawing = true;
         }
 
         /// <summary>
@@ -127,14 +82,14 @@ namespace ImageSelector
         public void MouseMoveEventHandler(MouseEventArgs e)
         {
             //get mouse click point relative to canvas overlay
-            Point mouseClickPoint = e.GetPosition(_canvas);
+            Point mousePoint = e.GetPosition(_canvas);
 
             if (_isDrawing)
             {
                 double x1 = _mouseStartPoint.X;
                 double y1 = _mouseStartPoint.Y;
-                double x2 = mouseClickPoint.X;
-                double y2 = mouseClickPoint.Y;
+                double x2 = mousePoint.X;
+                double y2 = mousePoint.Y;
 
                 // limit
                 if (x1 < 0) x1 = 0;
@@ -149,47 +104,6 @@ namespace ImageSelector
                 UpdateLine(x1, y1, x2, y2);
                 return;
             }
-            if (_isDragging)
-            {
-                //see how much the mouse has moved
-                double offsetX = mouseClickPoint.X - _mouseLastPoint.X;
-                double offsetY = mouseClickPoint.Y - _mouseLastPoint.Y;
-
-                //get the original rectangle parameters
-                double left = TopLeft.X;
-                double top = TopLeft.Y;
-                double width = _rectangle.Width;
-                double height = _rectangle.Height;
-
-                left += offsetX;
-                top += offsetY;
-
-                //set dragging limits(canvas borders)
-                //set bottom limit
-                if (top + offsetY + height > _canvas.ActualHeight)
-                {
-                    top = _canvas.ActualHeight - height;
-                }
-                //set right limit
-                if (left + offsetX + width > _canvas.ActualWidth)
-                {
-                    left = _canvas.ActualWidth - width;
-                }
-                //set left limit
-                if (left < 0)
-                {
-                    left = 0;
-                }
-                //set top limit
-                if (top < 0)
-                {
-                    top = 0;
-                }
-
-                // Update the rectangle.
-                UpdateRectangle(left, top, width, height);
-                _mouseLastPoint = mouseClickPoint;
-            }
         }
 
         /// <summary>
@@ -199,7 +113,6 @@ namespace ImageSelector
         public void MouseLeftButtonUpEventHandler()
         {
             _isDrawing = false;
-            _isDragging = false;
             _canvas.ReleaseMouseCapture();
         }
 
@@ -208,8 +121,8 @@ namespace ImageSelector
             //dont use negative value
             if (x1 >= 0 && y1 >= 0 && x2 >= 0 && y2 >= 0)
             {
-                Canvas.SetLeft(_line, x1);
-                Canvas.SetTop(_line, y1);
+                _line.X1 = x1;
+                _line.Y1 = y1;
                 _line.X2 = x2;
                 _line.Y2 = y2;
                 //we need to update dashed rectangle too
@@ -219,10 +132,10 @@ namespace ImageSelector
 
         private void UpdateDashedLine()
         {
+            _dashedLine.X1 = _line.X1;
+            _dashedLine.Y1 = _line.Y1;
             _dashedLine.X2 = _line.X2;
             _dashedLine.Y2 = _line.Y2;
-            Canvas.SetLeft(_dashedLine, _line.X1);
-            Canvas.SetTop(_dashedLine, _line.Y1);
         }
     }
 }
